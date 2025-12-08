@@ -1,0 +1,214 @@
+# PHP OOP Refactoring Plan
+
+**Project:** Project Management Software
+**Date:** 2025-12-04
+**Goal:** To incrementally refactor the existing PHP codebase to incorporate more robust OOP principles, including namespaces, inheritance, dependency injection, and a service layer. This will improve maintainability, organization, and testability.
+
+---
+
+### Phase 0: Preparation & Safety Net
+
+**Objective:** To ensure no work is lost and that you can revert to a working state at any time. **Do not skip this phase.**
+
+1.  **Initialize Git:** If you haven't already, turn your project directory into a Git repository.
+    ```sh
+    git init
+    git add .
+    git commit -m "Initial commit of working project"
+    ```
+
+2.  **Create a Refactoring Branch:** All work should be done on a separate branch. This protects your main, working code.
+    ```sh
+    git checkout -b feature/oop-refactor
+    ```
+
+3.  **Manual Backup (Optional):** As an extra precaution, create a zip file of your entire project directory and store it somewhere safe.
+
+---
+
+### Phase 1: Namespaces and Composer Autoloader
+
+**Objective:** To eliminate all `require_once` statements and establish a modern, organized code structure that prevents class name conflicts.
+
+1.  **Install Composer:** If you don't have Composer, download and install it from [getcomposer.org](https://getcomposer.org/).
+
+2.  **Initialize Composer in Your Project:** Run this command in your project's root directory. It will create a `composer.json` file. You can accept the defaults for most prompts.
+    ```sh
+    composer init
+    ```
+
+3.  **Configure PSR-4 Autoloader:** Open the generated `composer.json` file and add the `autoload` section. We will use `App` as our base namespace and map it to the project's root directory.
+    ```json
+    {
+        "name": "your-vendor/project-name",
+        "description": "A project management tool.",
+        "type": "project",
+        "require": {},
+        "autoload": {
+            "psr-4": {
+                "App\\": "./"
+            }
+        }
+    }
+    ```
+
+4.  **Generate the Autoloader:** Run this command. It will create a `vendor` directory containing the autoloader files.
+    ```sh
+    composer install
+    ```
+
+5.  **Integrate Autoloader:** In your main entry point file (`index.php`), remove all `require_once` statements and add this single line at the very top:
+    ```php
+    <?php
+    require_once __DIR__ . '/vendor/autoload.php';
+    // ... rest of your index.php
+    ```
+
+6.  **Refactor All PHP Files:** This is the most tedious step. Go through every `.php` file that contains a class and:
+    *   **Add a namespace declaration:**
+        *   For `models/Task.php`: `namespace App\\\models;`
+        *   For `controllers/task_controller.php`: `namespace App\\\controllers;`
+        *   And so on for every class.
+    *   **Remove all `require_once` and `include` statements for your classes.**
+    *   **Add `use` statements:** At the top of each file, under the namespace declaration, add `use` statements for every class you reference.
+        *   **Example (`task_controller.php`):**
+            ```php
+            <?php
+            namespace App\\\controllers;
+
+            use App\\\models\\\Task;
+            use App\\\models\\\User;
+            use App\\\models\\\Project;
+            // ... and so on
+
+            // ... your controller logic
+            $task = Task::getById($taskId); 
+            ```
+
+**Checkpoint:** After this phase, the application should be fully functional with no errors. All you have changed is *how* files are loaded, not *what* they do. Commit your work: `git commit -m "feat: Implement namespaces and Composer autoloader"`.
+
+---
+
+### Phase 2: Abstract Base Model (Inheritance)
+
+**Objective:** To reduce code duplication in your models (`User`, `Task`, `Project`, `Comment`).
+
+1.  **Create `BaseModel.php`:** Create a new file at `models/BaseModel.php`.
+2.  **Define the Abstract Class:** Add the common properties and methods.
+    ```php
+    <?php
+    namespace App\\\models;
+
+    abstract class BaseModel {
+        protected $id;
+
+        public function getId() {
+            return $this->id;
+        }
+    }
+    ```
+3.  **Update Your Models:** Modify each of your model classes.
+    *   **Example (`Task.php`):**
+        ```php
+        <?php
+        namespace App\\\models;
+
+        class Task extends BaseModel {
+            // The private $id property can be removed
+            // The public function getId() can be removed
+
+            // ... rest of the Task class properties and methods
+        }
+        ```
+4.  **Apply to All Models:** Repeat step 3 for `User.php`, `Project.php`, and `Comment.php`.
+
+**Checkpoint:** The application should still be fully functional. You have only reorganized code, not changed its behavior. Commit your work: `git commit -m "refactor: Create BaseModel and abstract common model logic"`.
+
+---
+
+### Phase 3: Dependency Injection for the Database
+
+**Objective:** To decouple your models from a specific `Database` class, making them more testable.
+
+1.  **Modify the `Database` class:** Change the `getInstance()` method. Instead of a Singleton, it should just be a simple method that returns a new `PDO` connection.
+2.  **Update `BaseModel`:** Add a constructor that accepts and stores the database connection.
+    ```php
+    <?php
+    namespace App\\\models;
+    use PDO; // Add this line
+
+    abstract class BaseModel {
+        protected $id;
+        protected PDO $db; // Store the db connection
+
+        public function __construct(PDO $db) {
+            $this->db = $db;
+        }
+
+        public function getId() {
+            return $this->id;
+        }
+    }
+    ```
+3.  **Update Model Constructors:** Modify your model constructors to accept the `PDO` object and pass it to the parent.
+    ```php
+    // In models/Task.php
+    public function __construct(PDO $db, $data) {
+        parent::__construct($db); // Call the parent constructor
+        // ... rest of your constructor logic
+    }
+    ```
+4.  **Update Model Methods:** Replace every call to `Database::getInstance()` with `$this->db`.
+5.  **Update Object Creation:** In your controllers and any other file where you create model objects (`new Task(...)`), you must now pass in the database connection. You'll likely create the PDO object once in `index.php` or a config file and pass it down.
+
+**Checkpoint:** This is a major change. Test every part of your application that interacts with the database. Commit your work: `git commit -m "refactor: Implement dependency injection for database"`.
+
+---
+
+### Phase 4: Service Layer for Business Logic
+
+**Objective:** To move complex business logic (especially permissions) out of your models and into dedicated service classes.
+
+1.  **Create a `services` Directory:** Create a new top-level folder named `services`.
+2.  **Refactor ONE Method:** Do not try to do everything at once. We will start with `Task::assign()`.
+    *   **Create `TaskService.php`:** `services/TaskService.php`.
+    *   **Create the Service Method:**
+        ```php
+        <?php
+        namespace App\\\services;
+        use App\\\models\\\Task;
+        use App\\\models\\\User;
+
+        class TaskService {
+            public function assignTask(User $assigningUser, Task $task, ?int $newAssigneeId): bool {
+                // Move ALL permission logic from Task::assign() here.
+                // For example:
+                if ($assigningUser->getLevel() === 'Senior' && ...) {
+                    // If permission is granted, call a simple data method on the task
+                    return $task->setAssignee($newAssigneeId);
+                }
+                return false; // Permission denied
+            }
+        }
+        ```
+    *   **Simplify the Model Method:** The `Task::assign()` method should be renamed and become very simple.
+        ```php
+        // In models/Task.php
+        public function setAssignee(?int $assigneeId): bool {
+            // This method ONLY does the database update. No logic.
+            $stmt = $this->db->prepare('UPDATE tasks SET assigned_to = ? WHERE id = ?');
+            return $stmt->execute([$assigneeId, $this->id]);
+        }
+        ```
+    *   **Update the Controller:** In `task_controller.php`, in the `handleAssign` function, you will now use the service.
+        ```php
+        // In controllers/task_controller.php
+        // ...
+        $taskService = new \\App\\services\\TaskService();
+        $success = $taskService->assignTask($currentUser, $task, $assigneeId);
+        // ...
+        ```
+3.  **Test Thoroughly:** Test the "assign task" feature for every user role to ensure the permissions still work correctly.
+4.  **Repeat Incrementally:** Once `assignTask` is working, move on to the next piece of logic (e.g., `unassign`, `updateStatus`, `deleteTask`). Refactor ONE method at a time, test it, and then commit.
+
+**Checkpoint:** This is the most complex phase. After each piece of logic is moved to a service, commit your work. Example: `git commit -m "refactor: Move task assignment logic to TaskService"`.

@@ -1,0 +1,41 @@
+.kanban-container {
+  display: flex;
+  gap: 32px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+.kanban-column {
+  flex: 0 0 300px; /* Fixed width for columns */
+  background-color: #e6d0d0;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+.kanban-column-header {
+  font-weight: bold;
+  margin-bottom: 15px;
+  font-size: 1.1em;
+  color: #343a40;
+}
+.kanban-card {
+  background-color: #f2f2f2;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+  cursor: grab;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.kanban-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.kanban-card-title {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.kanban-card-meta small {
+  color: #5c5c5c;
+}
+.kanban-cards {
+  min-height: 50px; /* To make columns droppable even when empty */
+}

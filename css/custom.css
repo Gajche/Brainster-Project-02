@@ -1,0 +1,10 @@
+/* Custom overrides */
+.toast-container {
+  z-index: 9999;
+}
+
+/* Responsive Kanban Overrides */
+.kanban-column {
+    flex: 1; /* Allow columns to grow and shrink */
+    margin-bottom: 1rem; /* Add spacing for stacked columns on mobile */
+}
