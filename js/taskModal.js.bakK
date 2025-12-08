@@ -3,37 +3,33 @@ import { showToast } from "./ui.js";
 export function loadModalContent(url, data, modalTitle, modalBody) {
   modalTitle.text("Loading...");
   modalBody.html(`
-    <div class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
-  `);
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    `);
 
-  return $.get(url, data)
+  return $.get(url, data, null, "json")
     .done(function (response) {
-      // NEW API FORMAT: data is inside response.data
-      if (response.success && response.data) {
-        modalTitle.text(response.data.title || "Task Details");
-        modalBody.html(response.data.body || "<p>No content available.</p>");
+      if (response.success) {
+        modalTitle.text(response.title);
+        modalBody.html(response.body);
       } else {
         modalTitle.text("Error");
         modalBody.html(
-          `<div class="alert alert-danger">
-            ${response.message || "Could not load content."}
-          </div>`
+          `<p class="alert alert-danger">${
+            response.message || "Could not load content."
+          }</p>`
         );
-        showToast("danger", response.message || "Failed to load");
       }
     })
-    .fail(function (jqXHR) {
+    .fail(function () {
       modalTitle.text("Error");
       modalBody.html(
-        `<div class="alert alert-danger">
-          Network error. Please try again.
-        </div>`
+        '<p class="alert alert-danger">Failed to load details. Please try again.</p>'
       );
-      showToast("danger", "Connection failed");
+      showToast("danger", "Failed to load task details.");
     });
 }
 
@@ -41,6 +37,7 @@ function handleViewTaskClick(e) {
   const taskId = $(e.currentTarget).data("task-id");
   const modalEl = document.getElementById("taskDetailsModal");
   const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+
   modalInstance.show();
 
   const modalTitle = $("#taskDetailsModalTitle");
@@ -58,6 +55,7 @@ function handleEditTaskClick(e) {
   const taskId = $(e.currentTarget).data("task-id");
   const modalEl = document.getElementById("editTaskModal");
   const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+
   modalInstance.show();
 
   const modalTitle = $("#editTaskModalTitle");

@@ -16,26 +16,26 @@ function post(url, data) {
 }
 
 /**
- * A generic handler for forms that submit via AJAX.
- * @param {Event} e The form submission event.
+ * Generic handler for AJAX forms
  */
 export function handleAjaxFormSubmit(e) {
   e.preventDefault();
+
   const form = $(e.currentTarget);
-  const action = form.attr("action");
-  const data = form.serialize();
   const submitBtn = form.find('button[type="submit"]');
   const originalBtnText = submitBtn.text();
 
-  submitBtn.html(
-    '<span class="spinner-border spinner-border-sm"></span> Loading...'
-  );
-  submitBtn.prop("disabled", true);
+  submitBtn
+    .html('<span class="spinner-border spinner-border-sm"></span> Loading...')
+    .prop("disabled", true);
 
-  post(action, data)
+  post(form.attr("action"), form.serialize())
     .done(function (response) {
-      if (response.success || response.status === "success") {
-        showToast("success", response.message || "Success!");
+      if (response.success) {
+        showToast(
+          "success",
+          response.message || "Action completed successfully!"
+        );
         if (form.data("reload")) {
           location.reload();
         }
@@ -44,18 +44,15 @@ export function handleAjaxFormSubmit(e) {
       }
     })
     .fail(function () {
-      showToast("danger", "Request failed. Please try again.");
+      showToast("danger", "Network error. Please try again.");
     })
     .always(function () {
-      submitBtn.html(originalBtnText);
-      submitBtn.prop("disabled", false);
+      submitBtn.html(originalBtnText).prop("disabled", false);
     });
 }
 
 /**
- * Changes the status of a task.
- * @param {string} taskId The ID of the task.
- * @param {string} newStatus The new status.
+ * Changes the status of a task (Kanban drag & drop)
  */
 export function changeTaskStatus(taskId, newStatus) {
   post("controllers/task_controller.php", {
@@ -64,14 +61,13 @@ export function changeTaskStatus(taskId, newStatus) {
     status: newStatus,
   })
     .done(function (response) {
-      console.log("Response:", response);
-      if (response.status === "success") {
+      if (response.success) {
         showToast("success", response.message || "Status updated!");
       } else {
-        showToast("danger", response.message || "Update failed.");
+        showToast("danger", response.message || "Failed to update status.");
       }
     })
     .fail(function () {
-      showToast("danger", "Request failed.");
+      showToast("danger", "Connection failed. Please try again.");
     });
 }

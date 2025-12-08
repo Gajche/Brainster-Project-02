@@ -1,17 +1,12 @@
 /**
- * Escapes HTML special characters in a string.
- * @param {string} text The string to escape.
- * @returns {string} The escaped string.
+ * Safely escapes HTML to prevent XSS attacks
+ * @param {string|number|null|undefined} text - Value to escape
+ * @returns {string} HTML-safe string
  */
 export function escapeHtml(text) {
-  const map = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-  };
-  return String(text).replace(/[&<>"']/g, function (m) {
-    return map[m];
-  });
+  if (text == null) return "";
+
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
 }

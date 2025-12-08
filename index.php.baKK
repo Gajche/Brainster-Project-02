@@ -1,28 +1,20 @@
 <?php
 
-// ------------------------------------------------------------------
-// Entry point & router
-// ------------------------------------------------------------------
 
-// Load configuration and helpers
+// require_once 'includes/config.php';  // Use relative for root
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/helpers.php';
+require_once Config::ROOT_DIR . '/models/Database.php';  // For any DB needs, but mostly in controllers
 
-// Load the standardized JSON API helpers — this is the key line!
-require_once __DIR__ . '/includes/api.php';
-
-// Database model (used in some controllers directly)
-require_once Config::ROOT_DIR . '/models/Database.php';
-
-// Start session if not already started
+// Start session
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
 
-// Determine which page to show
+// Get page from GET, default based on login
 $page = $_GET['page'] ?? (isLoggedIn() ? 'dashboard' : 'login');
 
-// Whitelist allowed pages (security against directory traversal)
+// Whitelist pages to prevent inclusion attacks
 $allowedPages = [
   'login',
   'register',
@@ -41,10 +33,10 @@ if (!in_array($page, $allowedPages)) {
 
 // Handle flash messages (display once)
 $flashSuccess = $_SESSION[Config::FLASH_SUCCESS] ?? '';
-$flashError   = $_SESSION[Config::FLASH_ERROR]   ?? '';
+$flashError = $_SESSION[Config::FLASH_ERROR] ?? '';
 unset($_SESSION[Config::FLASH_SUCCESS], $_SESSION[Config::FLASH_ERROR]);
 
-// Resolve view path
+// Include view
 $viewPath = Config::ROOT_DIR . "/views/{$page}.php";
 
 ?>
@@ -55,9 +47,7 @@ $viewPath = Config::ROOT_DIR . "/views/{$page}.php";
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?= Config::SITE_TITLE ?> - <?= ucfirst(str_replace('_', ' ', $page)) ?></title>
-
-  <!-- Styles -->
+  <title><?= Config::SITE_TITLE ?> - <?= ucfirst($page) ?></title>
   <link rel="stylesheet" href="css/bootstrap.min.css">
   <link rel="stylesheet" href="css/custom.css">
   <link rel="stylesheet" href="css/kanban.css">
@@ -68,8 +58,6 @@ $viewPath = Config::ROOT_DIR . "/views/{$page}.php";
   <?php require_once Config::ROOT_DIR . '/includes/header.php'; ?>
 
   <div class="container mt-4">
-
-    <!-- Flash Success Message -->
     <?php if ($flashSuccess): ?>
       <div class="alert alert-success alert-dismissible fade show" role="alert">
         <?= htmlspecialchars($flashSuccess) ?>
@@ -77,7 +65,6 @@ $viewPath = Config::ROOT_DIR . "/views/{$page}.php";
       </div>
     <?php endif; ?>
 
-    <!-- Flash Error Message -->
     <?php if ($flashError): ?>
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <?= htmlspecialchars($flashError) ?>
@@ -85,7 +72,6 @@ $viewPath = Config::ROOT_DIR . "/views/{$page}.php";
       </div>
     <?php endif; ?>
 
-    <!-- Load the requested view -->
     <?php
     if (file_exists($viewPath)) {
       require_once $viewPath;
@@ -93,17 +79,14 @@ $viewPath = Config::ROOT_DIR . "/views/{$page}.php";
       echo '<div class="alert alert-warning">Page not found.</div>';
     }
     ?>
-
   </div>
 
   <?php require_once Config::ROOT_DIR . '/includes/footer.php'; ?>
 
-  <!-- Scripts (keep your current order – works perfectly with Kanban + Sortable) -->
   <script src="js/jquery.min.js"></script>
   <script src="js/bootstrap.bundle.min.js"></script>
   <script src="js/Sortable.min.js"></script>
   <script type="module" src="js/main.js"></script>
-
 </body>
 
 </html>

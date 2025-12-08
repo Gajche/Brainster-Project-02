@@ -1,15 +1,15 @@
 <?php
 
-require_once __DIR__ . '/../includes/config.php';  // Relative path to load Config class first
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/api.php';
 require_once Config::ROOT_DIR . '/includes/helpers.php';
-// require_once Config::ROOT_DIR . '/includes/config.php';
 require_once Config::ROOT_DIR . '/models/Database.php';
 require_once Config::ROOT_DIR . '/models/User.php';
 require_once Config::ROOT_DIR . '/models/Project.php';
 require_once Config::ROOT_DIR . '/models/Task.php';
 require_once Config::ROOT_DIR . '/models/Comment.php';
 
-// Start session
+// Session start
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
@@ -68,16 +68,18 @@ switch ($action) {
     exit;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// AJAX HTML RETURNERS
+// ─────────────────────────────────────────────────────────────────────────────
+
 function handleGetTaskEditForm($userId)
 {
   $taskId = $_GET['task_id'] ?? 0;
-  $task = Task::getById($taskId);
-  $user = User::getById($userId);
+  $task   = Task::getById($taskId);
+  $user   = User::getById($userId);
 
   if (!$task || !$user->canEditTask($task->getId())) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Access denied.']);
-    exit;
+    apiError('forbidden', 'Access denied.', 403);
   }
 
   $formHtml = '
@@ -93,23 +95,19 @@ function handleGetTaskEditForm($userId)
                 <textarea class="form-control" id="description" name="description" rows="3">' . htmlspecialchars($task->getDescription()) . '</textarea>
             </div>
             <button type="submit" class="btn btn-primary">Update Task</button>
-        </form>
-    ';
+        </form>';
 
-  echo json_encode(['success' => true, 'body' => $formHtml]);
-  exit;
+  apiSuccess(['body' => $formHtml], 'Edit form loaded');
 }
 
 function handleGetCommentEditForm($userId)
 {
   $commentId = $_GET['comment_id'] ?? 0;
-  $comment = Comment::getById($commentId);
-  $user = User::getById($userId);
+  $comment   = Comment::getById($commentId);
+  $user      = User::getById($userId);
 
   if (!$comment || !$user->canEditComment($comment->getId())) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Access denied.']);
-    exit;
+    apiError('forbidden', 'Access denied.', 403);
   }
 
   $formHtml = '
@@ -121,50 +119,41 @@ function handleGetCommentEditForm($userId)
                 <textarea class="form-control" id="content" name="content" rows="3">' . htmlspecialchars($comment->getContent()) . '</textarea>
             </div>
             <button type="submit" class="btn btn-primary">Update Comment</button>
-        </form>
-    ';
+        </form>';
 
-  echo json_encode(['success' => true, 'body' => $formHtml]);
-  exit;
+  apiSuccess(['body' => $formHtml], 'Edit comment form loaded');
 }
 
-
-// Task actions
 function handleGetTaskDetailsHtml($userId)
 {
   $taskId = $_GET['task_id'] ?? 0;
-  $task = Task::getById($taskId);
-  $user = User::getById($userId);
+  $task   = Task::getById($taskId);
+  $user   = User::getById($userId);
 
   if (!$task || (!isAdmin() && !$user->isInProject($userId, $task->getProjectId()))) {
-    http_response_code(404);
-    // Ensure JSON is returned for AJAX requests, even on error
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Task not found or access denied.']);
-    exit;
+    apiError('not_found', 'Task not found or access denied.', 404);
+    return;
   }
 
-  // Set up variables required by the partial view
-  $userLevel = $_SESSION['user_level'] ?? null;
-  $isTeamLead = Project::getById($task->getProjectId())->canManageTeam($userId);
-  $canAssign = isAdmin() || $isTeamLead || !empty($user->getAssignableUsers($task->getProjectId()));
+  $userLevel       = $_SESSION['user_level'] ?? null;
+  $isTeamLead      = Project::getById($task->getProjectId())->canManageTeam($userId);
+  $canAssign       = isAdmin() || $isTeamLead || !empty($user->getAssignableUsers($task->getProjectId()));
   $canChangeStatus = $user->canChangeTaskStatus($task->getId());
   $canEditDeleteTask = isAdmin() || $isTeamLead || ($userLevel === 'Senior' && $task->getAssignedTo() == $userId);
 
-  // Capture the partial's output into a variable
   ob_start();
   require_once Config::ROOT_DIR . '/views/partials/task_modal_content.php';
   $modalBodyHtml = ob_get_clean();
 
-  // Return a structured JSON response
-  header('Content-Type: application/json');
-  echo json_encode([
-    'success' => true,
-    'title'   => 'Task: ' . htmlspecialchars($task->getTitle()),
-    'body'    => $modalBodyHtml
-  ]);
-  exit;
+  apiSuccess([
+    'title' => 'Task: ' . htmlspecialchars($task->getTitle()),
+    'body'  => $modalBodyHtml
+  ], 'Task details loaded');
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK CRUD ACTIONS
+// ─────────────────────────────────────────────────────────────────────────────
 
 function handleCreate($userId)
 {
@@ -179,19 +168,17 @@ function handleCreate($userId)
   }
 
   $data = [
-    'project_id' => $projectId,
-    'title' => $title,
+    'project_id'  => $projectId,
+    'title'       => $title,
     'description' => $description
   ];
 
   $newTaskId = Task::create($data, $userId);
 
   if ($newTaskId) {
-    // If an assignee was selected in the form, assign the new task
     if ($assigneeId) {
       $task = Task::getById($newTaskId);
       if ($task) {
-        // The assign method already contains all necessary permission checks
         $task->assign($assigneeId, $userId);
       }
     }
@@ -206,110 +193,68 @@ function handleAssign($userId)
 {
   $taskId     = $_POST['task_id'] ?? 0;
   $assigneeId = $_POST['assignee_id'] ?? 0;
-  $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+  $is_ajax    = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
   $task = Task::getById($taskId);
   if (!$task) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(404);
-      echo json_encode(['success' => false, 'message' => 'Task not found.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'Task not found.';
+    $is_ajax ? apiError('not_found', 'Task not found.', 404)
+      : ($_SESSION[Config::FLASH_ERROR] = 'Task not found.');
     redirectBack();
   }
 
   if ($task->assign($assigneeId, $userId)) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      echo json_encode(['success' => true, 'message' => 'Task assigned successfully.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_SUCCESS] = 'Task assigned successfully.';
+    $is_ajax ? apiSuccess(null, 'Task assigned successfully.')
+      : $_SESSION[Config::FLASH_SUCCESS] = 'Task assigned successfully.';
   } else {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(403);
-      echo json_encode(['success' => false, 'message' => 'You are not allowed to assign this task.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'You are not allowed to assign this task to that user.';
+    $is_ajax ? apiError('forbidden', 'You are not allowed to assign this task.', 403)
+      : $_SESSION[Config::FLASH_ERROR] = 'You are not allowed to assign this task to that user.';
   }
-  redirectBack();
+  $is_ajax ? null : redirectBack();
 }
 
 function handleUnassign($userId)
 {
-  $taskId = $_POST['task_id'] ?? 0;
-  $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+  $taskId  = $_POST['task_id'] ?? 0;
+  $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
   $task = Task::getById($taskId);
   if (!$task) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(404);
-      echo json_encode(['success' => false, 'message' => 'Task not found.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'Task not found.';
+    $is_ajax ? apiError('not_found', 'Task not found.', 404)
+      : ($_SESSION[Config::FLASH_ERROR] = 'Task not found.');
     redirectBack();
   }
 
   if ($task->assign(null, $userId)) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      echo json_encode(['success' => true, 'message' => 'Task unassigned successfully.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_SUCCESS] = 'Task unassigned successfully.';
+    $is_ajax ? apiSuccess(null, 'Task unassigned successfully.')
+      : $_SESSION[Config::FLASH_SUCCESS] = 'Task unassigned successfully.';
   } else {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(403);
-      echo json_encode(['success' => false, 'message' => 'You do not have permission to unassign this task.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'You do not have permission to unassign this task.';
+    $is_ajax ? apiError('forbidden', 'You do not have permission to unassign this task.', 403)
+      : $_SESSION[Config::FLASH_ERROR] = 'You do not have permission to unassign this task.';
   }
-  redirectBack();
+  $is_ajax ? null : redirectBack();
 }
 
 function handleChangeStatus($userId)
 {
   $taskId    = $_POST['task_id'] ?? 0;
   $newStatus = $_POST['status'] ?? '';
-  $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+  $is_ajax   = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
   $task = Task::getById($taskId);
   if (!$task) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(404);
-      echo json_encode(['status' => 'error', 'message' => 'Task not found.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'Task not found.';
+    $is_ajax ? apiError('not_found', 'Task not found.', 404)
+      : ($_SESSION[Config::FLASH_ERROR] = 'Task not found.');
     redirectBack();
   }
 
   if ($task->updateStatus($newStatus, $userId)) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      echo json_encode(['status' => 'success', 'message' => 'Status updated.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_SUCCESS] = 'Status updated.';
+    $is_ajax ? apiSuccess(null, 'Status updated.')
+      : $_SESSION[Config::FLASH_SUCCESS] = 'Status updated.';
   } else {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(403);
-      echo json_encode(['status' => 'error', 'message' => 'You cannot change the status of this task.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'You cannot change the status of this task.';
+    $is_ajax ? apiError('forbidden', 'You cannot change the status of this task.', 403)
+      : $_SESSION[Config::FLASH_ERROR] = 'You cannot change the status of this task.';
   }
-  redirectBack();
+  $is_ajax ? null : redirectBack();
 }
 
 function handleUpdate($userId)
@@ -317,41 +262,27 @@ function handleUpdate($userId)
   $taskId      = $_POST['task_id'] ?? 0;
   $title       = trim($_POST['title'] ?? '');
   $description = $_POST['description'] ?? '';
-  $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+  $is_ajax     = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
   $task = Task::getById($taskId);
   if (!$task) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(404);
-      echo json_encode(['success' => false, 'message' => 'Task not found.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'Task not found.';
+    $is_ajax ? apiError('not_found', 'Task not found.', 404)
+      : ($_SESSION[Config::FLASH_ERROR] = 'Task not found.');
     redirectBack();
   }
 
   $data = [];
-  if (!empty($title))       $data['title']       = $title;
+  if (!empty($title))               $data['title']       = $title;
   if (isset($_POST['description'])) $data['description'] = $description;
 
   if ($task->update($data, $userId)) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      echo json_encode(['success' => true, 'message' => 'Task updated.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_SUCCESS] = 'Task updated.';
+    $is_ajax ? apiSuccess(null, 'Task updated.')
+      : $_SESSION[Config::FLASH_SUCCESS] = 'Task updated.';
   } else {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(403);
-      echo json_encode(['success' => false, 'message' => 'You do not have permission to edit this task. Only Admins, Team Leads, or the assigned Senior can edit task details.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'You do not have permission to edit this task. Only Admins, Team Leads, or the assigned Senior can edit task details.';
+    $is_ajax ? apiError('forbidden', 'You do not have permission to edit this task.', 403)
+      : $_SESSION[Config::FLASH_ERROR] = 'You do not have permission to edit this task.';
   }
-  redirectBack();
+  $is_ajax ? null : redirectBack();
 }
 
 function handleDelete($userId)
@@ -366,22 +297,19 @@ function handleDelete($userId)
   redirectBack();
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// COMMENT ACTIONS
+// ─────────────────────────────────────────────────────────────────────────────
 
-// Comment actions
 function handleAddComment($userId)
 {
   $taskId  = $_POST['task_id'] ?? 0;
   $content = trim($_POST['content'] ?? '');
-  $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+  $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
   if (empty($taskId) || empty($content)) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(400);
-      echo json_encode(['status' => 'error', 'message' => 'Comment cannot be empty.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'Comment cannot be empty.';
+    $is_ajax ? apiError('bad_request', 'Comment cannot be empty.', 400)
+      : ($_SESSION[Config::FLASH_ERROR] = 'Comment cannot be empty.');
     redirectBack();
   }
 
@@ -389,60 +317,37 @@ function handleAddComment($userId)
   $newCommentId = Comment::create($commentData);
 
   if ($newCommentId) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      $comment = Comment::getById($newCommentId)->getDetails(); // Get the full comment details
-      echo json_encode(['status' => 'success', 'comment' => $comment]);
-      exit;
-    }
-    $_SESSION[Config::FLASH_SUCCESS] = 'Comment added.';
+    $comment = Comment::getById($newCommentId)->getDetails();
+    $is_ajax ? apiSuccess(['comment' => $comment], 'Comment added.')
+      : $_SESSION[Config::FLASH_SUCCESS] = 'Comment added.';
   } else {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(403); // Forbidden
-      echo json_encode(['status' => 'error', 'message' => 'You are not allowed to comment on this task.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'You are not allowed to comment on this task.';
+    $is_ajax ? apiError('forbidden', 'You are not allowed to comment on this task.', 403)
+      : $_SESSION[Config::FLASH_ERROR] = 'You are not allowed to comment on this task.';
   }
-  redirectBack();
+  $is_ajax ? null : redirectBack();
 }
 
 function handleEditComment($userId)
 {
   $commentId = $_POST['comment_id'] ?? 0;
   $content   = trim($_POST['content'] ?? '');
-  $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+  $is_ajax   = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
   $comment = Comment::getById($commentId);
   if (!$comment) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(404);
-      echo json_encode(['success' => false, 'message' => 'Comment not found.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'Comment not found.';
+    $is_ajax ? apiError('not_found', 'Comment not found.', 404)
+      : ($_SESSION[Config::FLASH_ERROR] = 'Comment not found.');
     redirectBack();
   }
 
   if ($comment->update($content, $userId)) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      echo json_encode(['success' => true, 'message' => 'Comment updated.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_SUCCESS] = 'Comment updated.';
+    $is_ajax ? apiSuccess(null, 'Comment updated.')
+      : $_SESSION[Config::FLASH_SUCCESS] = 'Comment updated.';
   } else {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(403);
-      echo json_encode(['success' => false, 'message' => 'You can only edit your own comments.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'You can only edit your own comments (or Admin).';
+    $is_ajax ? apiError('forbidden', 'You can only edit your own comments.', 403)
+      : $_SESSION[Config::FLASH_ERROR] = 'You can only edit your own comments (or Admin).';
   }
-  redirectBack();
+  $is_ajax ? null : redirectBack();
 }
 
 function handleDeleteComment($userId)
@@ -457,8 +362,9 @@ function handleDeleteComment($userId)
   redirectBack();
 }
 
-
-// Helper-redirect
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper
+// ─────────────────────────────────────────────────────────────────────────────
 function redirectBack()
 {
   $referer = $_SERVER['HTTP_REFERER'] ?? Config::getBaseUrl() . 'index.php?page=dashboard';

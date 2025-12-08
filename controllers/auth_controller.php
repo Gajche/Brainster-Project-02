@@ -1,16 +1,16 @@
 <?php
 
-require_once __DIR__ . '/../includes/config.php';  // Relative path to load Config class first
-// require_once Config::ROOT_DIR . '/includes/config.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/api.php';
 require_once Config::ROOT_DIR . '/models/Database.php';
 require_once Config::ROOT_DIR . '/models/User.php';
 
-// Start session if not already
+// Session start
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
 
-// Handle actions based on $_GET['action'] or direct POST
+// Handle actions
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
 switch ($action) {
@@ -27,23 +27,21 @@ switch ($action) {
     handleChangePassword();
     break;
   default:
-
-    // Invalid action
     $_SESSION[Config::FLASH_ERROR] = 'Invalid action.';
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=login');
     exit;
 }
 
-// Functions
-
+// ─────────────────────────────────────────────────────────────────────────────
+// REGISTER
+// ─────────────────────────────────────────────────────────────────────────────
 function handleRegister()
 {
-  // Validate inputs
-  $name = trim($_POST['name'] ?? '');
-  $email = trim($_POST['email'] ?? '');
-  $password = $_POST['password'] ?? '';
+  $name           = trim($_POST['name'] ?? '');
+  $email          = trim($_POST['email'] ?? '');
+  $password       = $_POST['password'] ?? '';
   $repeatPassword = $_POST['repeat_password'] ?? '';
-  $level = $_POST['level'] ?? '';
+  $level          = $_POST['level'] ?? '';
 
   if (empty($name) || empty($email) || empty($password) || empty($level)) {
     $_SESSION[Config::FLASH_ERROR] = 'All fields are required.';
@@ -69,9 +67,7 @@ function handleRegister()
     exit;
   }
 
-  // Check if email exists
-  $existingUser = User::getByLogin($email);
-  if ($existingUser) {
+  if (User::getByLogin($email)) {
     $_SESSION[Config::FLASH_ERROR] = 'Email already registered.';
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=register');
     exit;
@@ -81,70 +77,71 @@ function handleRegister()
     $_SESSION[Config::FLASH_SUCCESS] = 'Registration successful! Await admin approval.';
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=login');
   } else {
-    $_SESSION[Config::FLASH_ERROR] = 'Registration failed.';
+    $_SESSION[Config::FLASH_ERROR] = 'Registration failed. Please try again.';
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=register');
   }
   exit;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// LOGIN (supports both normal and AJAX login)
+// ─────────────────────────────────────────────────────────────────────────────
 function handleLogin()
 {
-  $login = trim($_POST['login'] ?? '');
+  $login    = trim($_POST['login'] ?? '');
   $password = $_POST['password'] ?? '';
-  $is_ajax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+  $is_ajax  = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
   if (empty($login) || empty($password)) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(400); // Bad Request
-      echo json_encode(['status' => 'error', 'message' => 'All fields are required.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'All fields are required.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=login');
-    exit;
+    $is_ajax
+      ? apiError('bad_request', 'All fields are required.', 400)
+      : ($_SESSION[Config::FLASH_ERROR] = 'All fields are required.');
+    $is_ajax ? null : header('Location: ' . Config::getBaseUrl() . 'index.php?page=login');
+    $is_ajax ? null : exit;
   }
 
   $user = User::getByLogin($login);
+
   if (!$user || !$user->isApproved()) {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(401); // Unauthorized
-      echo json_encode(['status' => 'error', 'message' => 'User not found or not approved.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'User not found or not approved.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=login');
-    exit;
+    $is_ajax
+      ? apiError('unauthorized', 'User not found or not approved.', 401)
+      : ($_SESSION[Config::FLASH_ERROR] = 'User not found or not approved.');
+    $is_ajax ? null : header('Location: ' . Config::getBaseUrl() . 'index.php?page=login');
+    $is_ajax ? null : exit;
   }
 
   if (password_verify($password, $user->getPassword())) {
-    $_SESSION['user_id'] = $user->getId();
-    $_SESSION['user_name'] = $user->getName();
-    $_SESSION['user_email'] = $user->getEmail();
-    $_SESSION['user_level'] = $user->getLevel();
-    $_SESSION['is_team_lead'] = $user->isTeamLead();
+    // Successful login — set session
+    $_SESSION['user_id']       = $user->getId();
+    $_SESSION['user_name']     = $user->getName();
+    $_SESSION['user_email']    = $user->getEmail();
+    $_SESSION['user_level']    = $user->getLevel();
+    $_SESSION['is_team_lead']  = $user->isTeamLead();
 
     if ($is_ajax) {
-      header('Content-Type: application/json');
-      echo json_encode(['status' => 'success', 'redirect' => Config::getBaseUrl() . 'index.php?page=dashboard']);
-      exit;
+      apiSuccess(
+        ['redirect' => Config::getBaseUrl() . 'index.php?page=dashboard'],
+        'Login successful'
+      );
     }
+
     $_SESSION[Config::FLASH_SUCCESS] = 'Login successful!';
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=dashboard');
-  } else {
-    if ($is_ajax) {
-      header('Content-Type: application/json');
-      http_response_code(401); // Unauthorized
-      echo json_encode(['status' => 'error', 'message' => 'Invalid password.']);
-      exit;
-    }
-    $_SESSION[Config::FLASH_ERROR] = 'Invalid password.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=login');
+    exit;
   }
-  exit;
+
+  // Invalid password
+  $is_ajax
+    ? apiError('unauthorized', 'Invalid password.', 401)
+    : ($_SESSION[Config::FLASH_ERROR] = 'Invalid password.');
+
+  $is_ajax ? null : header('Location: ' . Config::getBaseUrl() . 'index.php?page=login');
+  $is_ajax ? null : exit;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// LOGOUT
+// ─────────────────────────────────────────────────────────────────────────────
 function handleLogout()
 {
   session_destroy();
@@ -152,6 +149,9 @@ function handleLogout()
   exit;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// CHANGE PASSWORD
+// ─────────────────────────────────────────────────────────────────────────────
 function handleChangePassword()
 {
   if (!isset($_SESSION['user_id'])) {
@@ -159,9 +159,9 @@ function handleChangePassword()
     exit;
   }
 
-  $oldPw = $_POST['old_password'] ?? '';
-  $newPw = $_POST['new_password'] ?? '';
-  $repeatNewPw = $_POST['repeat_new_password'] ?? '';
+  $oldPw        = $_POST['old_password'] ?? '';
+  $newPw        = $_POST['new_password'] ?? '';
+  $repeatNewPw  = $_POST['repeat_new_password'] ?? '';
 
   if (empty($oldPw) || empty($newPw) || empty($repeatNewPw)) {
     $_SESSION[Config::FLASH_ERROR] = 'All fields are required.';
@@ -176,6 +176,7 @@ function handleChangePassword()
   }
 
   $user = User::getById($_SESSION['user_id']);
+
   if ($user->changePassword($oldPw, $newPw)) {
     $_SESSION[Config::FLASH_SUCCESS] = 'Password changed successfully!';
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=dashboard');

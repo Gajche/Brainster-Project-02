@@ -1,5 +1,3 @@
-// js/main.js — THIS IS THE ONE THAT WAS BROKEN
-
 import { initAuth } from "./auth.js";
 import { initKanban } from "./kanban.js";
 import { initTaskModals } from "./taskModal.js";
@@ -7,12 +5,12 @@ import { initComments } from "./comment.js";
 import { handleAjaxFormSubmit } from "./api.js";
 
 $(function () {
-  // THESE 5 LINES MUST BE HERE — ESPECIALLY initAuth() !!
-  initAuth(); // ← THIS WAS MISSING OR NOT EXECUTED
+  // Initialize all modules
+  initAuth();
   initKanban();
   initTaskModals();
   initComments();
 
-  // Generic handler for all .ajax-form
+  // Generic AJAX form handler
   $(document).on("submit", "form.ajax-form", handleAjaxFormSubmit);
 });
