@@ -7,6 +7,7 @@
 // Load configuration and helpers
 require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/helpers.php';
+// require_once 'autoload.php';
 
 // Load the standardized JSON API helpers — this is the key line!
 require_once __DIR__ . '/includes/api.php';

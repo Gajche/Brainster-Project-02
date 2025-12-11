@@ -166,7 +166,7 @@ class User
     // The permission to unassign is checked in the Task model based on the *current* assignee.
     // So, if we get this far with a null ID, the action is permitted.
     if ($assigneeId === null) {
-        return true;
+      return true;
     }
 
     $assignee = self::getById($assigneeId);
@@ -275,13 +275,13 @@ class User
   public function canEditTask($taskId)
   {
     if ($this->level === 'Admin') {
-        return true;
+      return true;
     }
     if ($this->level === 'Senior') {
-        $task = Task::getById($taskId);
-        if ($task) {
-            return self::isInProject($this->id, $task->getProjectId());
-        }
+      $task = Task::getById($taskId);
+      if ($task) {
+        return self::isInProject($this->id, $task->getProjectId());
+      }
     }
     return false;
   }
@@ -289,11 +289,11 @@ class User
   public function canEditComment($commentId)
   {
     if ($this->level === 'Admin') {
-        return true;
+      return true;
     }
     $comment = Comment::getById($commentId);
     if ($comment) {
-        return $comment->getUserId() == $this->id;
+      return $comment->getUserId() == $this->id;
     }
     return false;
   }

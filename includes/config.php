@@ -3,7 +3,7 @@
 class Config
 {
   const DB_HOST = 'localhost';
-  const DB_NAME = 'my_project_management';
+  const DB_NAME = 'nikolovski_project_management';
   const DB_USER = 'root';
   const DB_PASS = '';
 
