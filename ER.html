@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chen Notation with Double Lines - Total Participation</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    .container {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 1600px;
+      margin: 0 auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      position: relative;
+      min-width: 1200px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      font-weight: bold;
+      border-bottom: 3px solid #3498db;
+      padding-bottom: 15px;
+    }
+
+    /* Chen Notation Shapes */
+    .entity {
+      position: absolute;
+      width: 220px;
+      min-height: 150px;
+      background: white;
+      border: 4px solid #3498db;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+      z-index: 100;
+    }
+
+    .entity-title {
+      background: #3498db;
+      color: white;
+      padding: 12px;
+      margin: -15px -15px 15px -15px;
+      border-radius: 4px 4px 0 0;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    .relationship {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background: #fff9e6;
+      border: 4px solid #f1c40f;
+      transform: rotate(45deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(241, 196, 15, 0.2);
+      z-index: 150;
+    }
+
+    .relationship-label {
+      transform: rotate(-45deg);
+      color: #d35400;
+      font-weight: bold;
+      font-size: 14px;
+      text-align: center;
+      width: 100%;
+    }
+
+    /* SINGLE LINE (Partial Participation) */
+    .line-single {
+      position: absolute;
+      background: #7f8c8d;
+      height: 3px;
+      transform-origin: 0 0;
+    }
+
+    /* DOUBLE LINE (Total Participation) */
+    .line-double {
+      position: absolute;
+      height: 6px;
+      transform-origin: 0 0;
+      background: repeating-linear-gradient(to bottom,
+          #7f8c8d,
+          #7f8c8d 2px,
+          white 2px,
+          white 4px);
+    }
+
+    /* DASHED LINE (Optional/Zero or One) */
+    .line-dashed {
+      position: absolute;
+      background: repeating-linear-gradient(to right,
+          #7f8c8d,
+          #7f8c8d 5px,
+          transparent 5px,
+          transparent 10px);
+      height: 3px;
+      transform-origin: 0 0;
+    }
+
+    .cardinality {
+      position: absolute;
+      background: white;
+      border: 2px solid #3498db;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #3498db;
+      font-size: 14px;
+      z-index: 200;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .cardinality-1 {
+      background: #e8f4fc;
+    }
+
+    .cardinality-m {
+      background: #ffebee;
+      color: #e74c3c;
+      border-color: #e74c3c;
+    }
+
+    .instructions {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 40px;
+      border-left: 5px solid #3498db;
+    }
+
+    .instructions h3 {
+      color: #2c3e50;
+      margin-bottom: 15px;
+    }
+
+    .line-examples {
+      display: flex;
+      gap: 30px;
+      margin: 20px 0;
+    }
+
+    .line-example {
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+    }
+
+    .line-demo {
+      width: 100px;
+      height: 6px;
+      margin-right: 15px;
+    }
+
+    .demo-single {
+      background: #7f8c8d;
+      height: 3px;
+    }
+
+    .demo-double {
+      background: repeating-linear-gradient(to bottom, #7f8c8d, #7f8c8d 2px, white 2px, white 4px);
+    }
+
+    .demo-dashed {
+      background: repeating-linear-gradient(to right, #7f8c8d, #7f8c8d 5px, transparent 5px, transparent 10px);
+      height: 3px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Chen Notation with DOUBLE LINES (Total Participation)</h1>
+
+    <div id="diagram" style="position: relative; width: 1500px; height: 900px;">
+      <!-- Diagram will be drawn here -->
+    </div>
+
+    <div class="instructions">
+      <h3>📌 DOUBLE LINES in Your Schema (Required Relationships):</h3>
+      <div class="line-examples">
+        <div>
+          <h4>MUST Use DOUBLE Lines:</h4>
+          <div class="line-example">
+            <div class="line-demo demo-double"></div>
+            <div><strong>tasks → projects</strong> (Every task MUST belong to a project - ON DELETE CASCADE)</div>
+          </div>
+          <div class="line-example">
+            <div class="line-demo demo-double"></div>
+            <div><strong>comments → tasks</strong> (Every comment MUST belong to a task - ON DELETE CASCADE)</div>
+          </div>
+          <div class="line-example">
+            <div class="line-demo demo-double"></div>
+            <div><strong>comments → users</strong> (Every comment MUST have an author - FOREIGN KEY constraint)</div>
+          </div>
+        </div>
+
+        <div>
+          <h4>Use SINGLE Lines:</h4>
+          <div class="line-example">
+            <div class="line-demo demo-single"></div>
+            <div><strong>projects → users</strong> (Project can exist without team lead - team_lead_id can be NULL?)
+            </div>
+          </div>
+          <div class="line-example">
+            <div class="line-demo demo-dashed"></div>
+            <div><strong>tasks → users</strong> (Tasks can be unassigned - assigned_to is NULL by default)</div>
+          </div>
+        </div>
+      </div>
+
+      <p><strong>Rule:</strong> Use DOUBLE lines when foreign key is NOT NULL or has ON DELETE CASCADE. Use SINGLE lines
+        when NULL is allowed.</p>
+    </div>
+  </div>
+
+  <script>
+    const diagram = document.getElementById('diagram');
+
+    // Entity positions
+    const entities = {
+      users: { x: 200, y: 200, width: 220, height: 150 },
+      projects: { x: 800, y: 200, width: 220, height: 150 },
+      tasks: { x: 500, y: 500, width: 220, height: 150 },
+      comments: { x: 900, y: 500, width: 220, height: 150 }
+    };
+
+    // Relationships with line type configuration
+    const relationships = [
+      {
+        id: 'leads',
+        x: 500, y: 180,
+        label: 'Leads',
+        from: 'projects', to: 'users',
+        lineFromType: 'single',  // Single line: team_lead_id is required but can be NULL in schema?
+        lineToType: 'single'     // Actually check if team_lead_id is NOT NULL
+      },
+      {
+        id: 'has',
+        x: 650, y: 350,
+        label: 'Has',
+        from: 'projects', to: 'tasks',
+        lineFromType: 'single',  // Single: Project can exist without tasks
+        lineToType: 'double'     // DOUBLE: Every task MUST belong to a project (ON DELETE CASCADE)
+      },
+      {
+        id: 'assigned',
+        x: 350, y: 350,
+        label: 'Assigned',
+        from: 'users', to: 'tasks',
+        lineFromType: 'single',   // Single: User can exist without assigned tasks
+        lineToType: 'dashed'      // DASHED: Task assignment is optional (NULL allowed)
+      },
+      {
+        id: 'writes',
+        x: 550, y: 350,
+        label: 'Writes',
+        from: 'users', to: 'comments',
+        lineFromType: 'single',   // Single: User can exist without writing comments
+        lineToType: 'double'      // DOUBLE: Every comment MUST have a user (FOREIGN KEY)
+      },
+      {
+        id: 'belongs',
+        x: 750, y: 350,
+        label: 'Belongs',
+        from: 'tasks', to: 'comments',
+        lineFromType: 'single',   // Single: Task can exist without comments
+        lineToType: 'double'      // DOUBLE: Every comment MUST belong to a task (ON DELETE CASCADE)
+      }
+    ];
+
+    // Cardinalities
+    const cardinalities = {
+      'leads': { from: 'M', to: '1' },
+      'has': { from: '1', to: 'M' },
+      'assigned': { from: 'M', to: '0..1' },
+      'writes': { from: '1', to: 'M' },
+      'belongs': { from: '1', to: 'M' }
+    };
+
+    function initDiagram() {
+      diagram.innerHTML = '';
+
+      // Draw entities
+      Object.keys(entities).forEach(entityId => {
+        drawEntity(entityId);
+      });
+
+      // Draw relationships and connections
+      relationships.forEach(rel => {
+        drawRelationship(rel);
+        drawConnection(rel);
+      });
+    }
+
+    function drawEntity(entityId) {
+      const e = entities[entityId];
+      const div = document.createElement('div');
+      div.className = 'entity';
+      div.id = `entity-${entityId}`;
+      div.style.left = `${e.x - e.width / 2}px`;
+      div.style.top = `${e.y - e.height / 2}px`;
+      div.style.width = `${e.width}px`;
+      div.style.height = `${e.height}px`;
+
+      div.innerHTML = `
+                <div class="entity-title">${entityId}</div>
+                <div style="font-size: 12px; color: #555; margin-top: 5px;">
+                    ${getEntityAttributes(entityId)}
+                </div>
+            `;
+
+      diagram.appendChild(div);
+    }
+
+    function getEntityAttributes(entityId) {
+      const attributes = {
+        users: 'id(PK), name, email, password, level',
+        projects: 'id(PK), title, deadline, status, team_lead_id(FK)',
+        tasks: 'id(PK), title, status, project_id(FK-NN), assigned_to(FK-NULL)',
+        comments: 'id(PK), content, task_id(FK-NN), user_id(FK-NN)'
+      };
+      return attributes[entityId] || '';
+    }
+
+    function drawRelationship(rel) {
+      const div = document.createElement('div');
+      div.className = 'relationship';
+      div.id = `rel-${rel.id}`;
+      div.style.left = `${rel.x - 50}px`;
+      div.style.top = `${rel.y - 50}px`;
+      div.style.transform = 'rotate(45deg)';
+
+      div.innerHTML = `<div class="relationship-label">${rel.label}</div>`;
+      diagram.appendChild(div);
+    }
+
+    function drawConnection(rel) {
+      const fromEntity = entities[rel.from];
+      const toEntity = entities[rel.to];
+      const relCenter = { x: rel.x, y: rel.y };
+
+      // Calculate connection points
+      const angleFrom = Math.atan2(
+        relCenter.y - fromEntity.y,
+        relCenter.x - fromEntity.x
+      );
+
+      const angleTo = Math.atan2(
+        toEntity.y - relCenter.y,
+        toEntity.x - relCenter.x
+      );
+
+      // Draw FROM entity to relationship
+      drawLineSegment(
+        fromEntity.x + Math.cos(angleFrom) * 110,
+        fromEntity.y + Math.sin(angleFrom) * 75,
+        relCenter.x - Math.cos(angleFrom) * 70,
+        relCenter.y - Math.sin(angleFrom) * 70,
+        rel.lineFromType
+      );
+
+      // Draw FROM relationship to entity
+      drawLineSegment(
+        relCenter.x + Math.cos(angleTo) * 70,
+        relCenter.y + Math.sin(angleTo) * 70,
+        toEntity.x - Math.cos(angleTo) * 110,
+        toEntity.y - Math.sin(angleTo) * 75,
+        rel.lineToType
+      );
+
+      // Add cardinality labels
+      const card = cardinalities[rel.id];
+      if (card) {
+        // From side cardinality
+        const fromCardX = fromEntity.x + Math.cos(angleFrom) * 130;
+        const fromCardY = fromEntity.y + Math.sin(angleFrom) * 90;
+        drawCardinality(fromCardX, fromCardY, card.from);
+
+        // To side cardinality
+        const toCardX = toEntity.x - Math.cos(angleTo) * 130;
+        const toCardY = toEntity.y - Math.sin(angleTo) * 90;
+        drawCardinality(toCardX, toCardY, card.to);
+      }
+    }
+
+    function drawLineSegment(x1, y1, x2, y2, lineType) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+      const line = document.createElement('div');
+
+      // Set class based on line type
+      if (lineType === 'double') {
+        line.className = 'line-double';
+      } else if (lineType === 'dashed') {
+        line.className = 'line-dashed';
+      } else {
+        line.className = 'line-single';
+      }
+
+      line.style.left = `${x1}px`;
+      line.style.top = `${y1}px`;
+      line.style.width = `${length}px`;
+      line.style.transform = `rotate(${angle}deg)`;
+
+      diagram.appendChild(line);
+    }
+
+    function drawCardinality(x, y, value) {
+      const div = document.createElement('div');
+      div.className = 'cardinality';
+
+      if (value === '1') {
+        div.className += ' cardinality-1';
+      } else if (value === 'M') {
+        div.className += ' cardinality-m';
+      }
+
+      div.style.left = `${x - 15}px`;
+      div.style.top = `${y - 15}px`;
+      div.textContent = value;
+
+      diagram.appendChild(div);
+    }
+
+    // Initialize
+    initDiagram();
+
+    // Make draggable
+    let dragged = null;
+    let offsetX = 0, offsetY = 0;
+
+    diagram.addEventListener('mousedown', (e) => {
+      const element = e.target.closest('.entity, .relationship');
+      if (element) {
+        dragged = element;
+        const rect = element.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        element.style.zIndex = '1000';
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!dragged) return;
+
+      const containerRect = diagram.getBoundingClientRect();
+      const x = e.clientX - containerRect.left - offsetX;
+      const y = e.clientY - containerRect.top - offsetY;
+
+      dragged.style.left = `${x}px`;
+      dragged.style.top = `${y}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (dragged) {
+        dragged.style.zIndex = '';
+        dragged = null;
+      }
+    });
+  </script>
+</body>
+
+</html>

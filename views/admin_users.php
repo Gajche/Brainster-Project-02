@@ -14,7 +14,7 @@ $users = User::getAll();
 
 <!-- Create User Form -->
 <div class="card mb-4">
-  <div class="card-header">Create New User</div>
+  <h5 class="card-header">Create New User</h5>
   <div class="card-body">
     <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/user_controller.php">
       <input type="hidden" name="action" value="create">
@@ -130,38 +130,38 @@ $users = User::getAll();
         </div>
       </div>
     <?php endforeach; ?>
-  <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // For create form
-    const createLevel = document.getElementById('level');
-    const createIsTeamLead = document.getElementById('is_team_lead');
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // For create form
+        const createLevel = document.getElementById('level');
+        const createIsTeamLead = document.getElementById('is_team_lead');
 
-    function toggleCreateTeamLead() {
-      if (createLevel.value !== 'Senior') {
-        createIsTeamLead.disabled = true;
-        createIsTeamLead.checked = false;
-      } else {
-        createIsTeamLead.disabled = false;
-      }
-    }
-    createLevel.addEventListener('change', toggleCreateTeamLead);
-    toggleCreateTeamLead();
-
-    // For edit modals
-    <?php foreach ($users as $user): ?>
-      const editLevel_<?= $user['id'] ?> = document.getElementById('level<?= $user['id'] ?>');
-      const editIsTeamLead_<?= $user['id'] ?> = document.getElementById('is_team_lead<?= $user['id'] ?>');
-
-      function toggleEditTeamLead_<?= $user['id'] ?>() {
-        if (editLevel_<?= $user['id'] ?>.value !== 'Senior') {
-          editIsTeamLead_<?= $user['id'] ?>.disabled = true;
-          editIsTeamLead_<?= $user['id'] ?>.checked = false;
-        } else {
-          editIsTeamLead_<?= $user['id'] ?>.disabled = false;
+        function toggleCreateTeamLead() {
+          if (createLevel.value !== 'Senior') {
+            createIsTeamLead.disabled = true;
+            createIsTeamLead.checked = false;
+          } else {
+            createIsTeamLead.disabled = false;
+          }
         }
-      }
-      editLevel_<?= $user['id'] ?>.addEventListener('change', toggleEditTeamLead_<?= $user['id'] ?>);
-      toggleEditTeamLead_<?= $user['id'] ?>();
-    <?php endforeach; ?>
-  });
-</script>
+        createLevel.addEventListener('change', toggleCreateTeamLead);
+        toggleCreateTeamLead();
+
+        // For edit modals
+        <?php foreach ($users as $user): ?>
+          const editLevel_<?= $user['id'] ?> = document.getElementById('level<?= $user['id'] ?>');
+          const editIsTeamLead_<?= $user['id'] ?> = document.getElementById('is_team_lead<?= $user['id'] ?>');
+
+          function toggleEditTeamLead_<?= $user['id'] ?>() {
+            if (editLevel_<?= $user['id'] ?>.value !== 'Senior') {
+              editIsTeamLead_<?= $user['id'] ?>.disabled = true;
+              editIsTeamLead_<?= $user['id'] ?>.checked = false;
+            } else {
+              editIsTeamLead_<?= $user['id'] ?>.disabled = false;
+            }
+          }
+          editLevel_<?= $user['id'] ?>.addEventListener('change', toggleEditTeamLead_<?= $user['id'] ?>);
+          toggleEditTeamLead_<?= $user['id'] ?>();
+        <?php endforeach; ?>
+      });
+    </script>

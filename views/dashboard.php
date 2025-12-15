@@ -20,15 +20,17 @@ if (isAdmin()) {
 // Determine the user's full title
 $userTitle = $_SESSION['user_level'] ?? 'User';
 if (($_SESSION['user_level'] ?? '') === 'Senior' && ($_SESSION['is_team_lead'] ?? false)) {
-    $userTitle = 'Team Lead Senior';
+  $userTitle = 'Team Lead Senior';
 }
 ?>
 
-<h2>Welcome, <?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?>!</h2>
+<h3>Welcome, <?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?>!</h3>
 <p class="lead">
-    Your Role: <strong><?= htmlspecialchars($userTitle) ?></strong><br>
-    Email: <strong><?= htmlspecialchars($_SESSION['user_email'] ?? 'N/A') ?></strong>
+  Your Role: <strong><?= htmlspecialchars($userTitle) ?></strong><br>
+  Email: <strong><?= htmlspecialchars($_SESSION['user_email'] ?? 'N/A') ?></strong>
 </p>
+
+<hr>
 
 <?php if (isAdmin()): ?>
   <p><a href="<?= Config::getBaseUrl() ?>index.php?page=admin_panel" class="btn btn-secondary">Go to Admin Panel</a></p>
@@ -39,36 +41,29 @@ if (($_SESSION['user_level'] ?? '') === 'Senior' && ($_SESSION['is_team_lead'] ?
 <?php if (empty($projects)): ?>
   <p class="alert alert-info">You are not part of any projects yet.</p>
 <?php else: ?>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Status</th>
-        <th>Deadline</th>
-        <th>Role</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach ($projects as $project): ?>
-        <tr>
-          <td><?= htmlspecialchars($project->getTitle()) ?></td>
-          <td><?= htmlspecialchars($project->getStatus()) ?></td>
-          <td><?= htmlspecialchars($project->getDeadline() ? date('Y-m-d', strtotime($project->getDeadline())) : 'N/A') ?></td>
-          <td>
-            <?php if (isAdmin()): ?>
-              Admin
-            <?php elseif ($project->getTeamLeadId() == $userId): ?>
-              Team Lead
-            <?php else: ?>
-              Member
-            <?php endif; ?>
-          </td>
-          <td>
+  <div class="row">
+    <?php foreach ($projects as $project): ?>
+      <div class="col-md-3 mb-4">
+        <div class="card h-100">
+          <div class="card-body bg-lightgray shadow">
+            <h5 class="card-title"><?= htmlspecialchars($project->getTitle()) ?></h5>
+            <p class="card-text">
+              <strong>Status:</strong> <?= htmlspecialchars($project->getStatus()) ?><br>
+              <strong>Deadline:</strong> <?= htmlspecialchars($project->getDeadline() ? date('Y-m-d', strtotime($project->getDeadline())) : 'N/A') ?><br>
+              <strong>Role:</strong>
+              <?php if (isAdmin()): ?>
+                Admin
+              <?php elseif ($project->getTeamLeadId() == $userId): ?>
+                Team Lead
+              <?php else: ?>
+                Member
+              <?php endif; ?>
+            </p>
             <a href="<?= Config::getBaseUrl() ?>index.php?page=project_view&id=<?= $project->getId() ?>" class="btn btn-sm btn-primary">View</a>
-          </td>
-        </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
+          </div>
+        </div>
+      </div>
+    <?php endforeach; ?>
+  </div>
+  <hr>
 <?php endif; ?>

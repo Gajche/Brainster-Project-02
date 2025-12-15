@@ -17,9 +17,11 @@ $teamLeads = array_filter(User::getAll(), function ($u) {
 
 <h2>Manage Projects</h2>
 
+
+
 <!-- Create Project Form -->
 <div class="card mb-4">
-  <div class="card-header">Create New Project</div>
+  <h5 class="card-header">Create New Project</h5>
   <div class="card-body">
     <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/project_controller.php">
       <input type="hidden" name="action" value="create">

@@ -33,10 +33,10 @@ $tasks = Task::getByProject($projectId);
 // Group tasks by status for Kanban view
 $tasksByStatus = [];
 foreach (Config::TASK_STATUSES as $status) {
-    $tasksByStatus[$status] = [];
+  $tasksByStatus[$status] = [];
 }
 foreach ($tasks as $task) {
-    $tasksByStatus[$task->getStatus()][] = $task;
+  $tasksByStatus[$task->getStatus()][] = $task;
 }
 ?>
 
@@ -135,15 +135,15 @@ foreach ($tasks as $task) {
           <textarea class="form-control" id="description" name="description" rows="3"></textarea>
         </div>
         <div class="mb-3">
-            <label for="assignee_id" class="form-label">Assign To</label>
-            <select class="form-select" id="assignee_id" name="assignee_id">
-                <option value="">Unassigned</option>
-                <?php
-                $assignableUsers = User::getById($userId)->getAssignableUsers($projectId);
-                foreach ($assignableUsers as $assignee): ?>
-                    <option value="<?= $assignee['id'] ?>"><?= htmlspecialchars($assignee['name']) ?> (<?= htmlspecialchars($assignee['level']) ?>)</option>
-                <?php endforeach; ?>
-            </select>
+          <label for="assignee_id" class="form-label">Assign To</label>
+          <select class="form-select" id="assignee_id" name="assignee_id">
+            <option value="">Unassigned</option>
+            <?php
+            $assignableUsers = User::getById($userId)->getAssignableUsers($projectId);
+            foreach ($assignableUsers as $assignee): ?>
+              <option value="<?= $assignee['id'] ?>"><?= htmlspecialchars($assignee['name']) ?> (<?= htmlspecialchars($assignee['level']) ?>)</option>
+            <?php endforeach; ?>
+          </select>
         </div>
         <button type="submit" class="btn btn-primary">Create Task</button>
       </form>
@@ -154,9 +154,9 @@ foreach ($tasks as $task) {
 <div class="row">
   <?php foreach (Config::TASK_STATUSES as $status): ?>
     <div class="col-12 col-md-6 col-xl-3">
-      <div class="kanban-column" data-status="<?= htmlspecialchars($status) ?>">
+      <div class="kanban-column shadow" data-status="<?= htmlspecialchars($status) ?>">
         <div class="kanban-column-header"><?= htmlspecialchars($status) ?></div>
-        <div class="kanban-cards">
+        <div class="kanban-cards bg-lightgray shadow">
           <?php foreach ($tasksByStatus[$status] as $task): ?>
             <?php
             $assigned = User::getById($task->getAssignedTo());
@@ -198,30 +198,30 @@ foreach ($tasks as $task) {
 
 <!-- Edit Task Modal (Single instance) -->
 <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editTaskModalLabel">Edit Task</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="edit-task-modal-body">
-                <!-- Edit form will be loaded here -->
-            </div>
-        </div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTaskModalLabel">Edit Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="edit-task-modal-body">
+        <!-- Edit form will be loaded here -->
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- Edit Comment Modal (Single instance) -->
 <div class="modal fade" id="editCommentModal" tabindex="-1" aria-labelledby="editCommentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editCommentModalLabel">Edit Comment</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="edit-comment-modal-body">
-                <!-- Edit comment form will be loaded here -->
-            </div>
-        </div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editCommentModalLabel">Edit Comment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="edit-comment-modal-body">
+        <!-- Edit comment form will be loaded here -->
+      </div>
     </div>
+  </div>
 </div>

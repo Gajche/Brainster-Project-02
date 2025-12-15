@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chen Notation ER Diagram - Pure Entities & Relationships</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    .container {
+      background: white;
+      border-radius: 15px;
+      padding: 30px;
+      max-width: 1600px;
+      margin: 0 auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      position: relative;
+      min-width: 1200px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      font-weight: bold;
+      border-bottom: 3px solid #3498db;
+      padding-bottom: 15px;
+    }
+
+    /* Chen Notation Shapes */
+    .entity {
+      position: absolute;
+      width: 220px;
+      min-height: 150px;
+      background: white;
+      border: 4px solid #3498db;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+      z-index: 100;
+    }
+
+    .entity-title {
+      background: #3498db;
+      color: white;
+      padding: 12px;
+      margin: -15px -15px 15px -15px;
+      border-radius: 4px 4px 0 0;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    .relationship {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background: #fff9e6;
+      border: 4px solid #f1c40f;
+      transform: rotate(45deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(241, 196, 15, 0.2);
+      z-index: 150;
+    }
+
+    .relationship-label {
+      transform: rotate(-45deg);
+      color: #d35400;
+      font-weight: bold;
+      font-size: 14px;
+      text-align: center;
+      width: 100%;
+    }
+
+    /* Connection Lines */
+    .connector {
+      position: absolute;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    .line {
+      position: absolute;
+      background: #7f8c8d;
+      height: 3px;
+      transform-origin: 0 0;
+    }
+
+    .line-dashed {
+      background: repeating-linear-gradient(to right,
+          #7f8c8d,
+          #7f8c8d 5px,
+          transparent 5px,
+          transparent 10px);
+    }
+
+    .arrow {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-style: solid;
+    }
+
+    .arrow-end {
+      border-width: 8px 0 8px 12px;
+      border-color: transparent transparent transparent #7f8c8d;
+      transform: translateY(-8px);
+    }
+
+    .arrow-both {
+      border-width: 8px 0 8px 12px;
+      border-color: transparent transparent transparent #7f8c8d;
+    }
+
+    .crowfoot {
+      position: absolute;
+      font-size: 24px;
+      color: #7f8c8d;
+      font-weight: bold;
+    }
+
+    .crowfoot::after {
+      content: ">";
+    }
+
+    .crowfoot-many::after {
+      content: ">>";
+    }
+
+    .cardinality {
+      position: absolute;
+      background: white;
+      border: 2px solid #3498db;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #3498db;
+      font-size: 14px;
+      z-index: 200;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .cardinality-1 {
+      background: #e8f4fc;
+    }
+
+    .cardinality-m {
+      background: #ffebee;
+      color: #e74c3c;
+      border-color: #e74c3c;
+    }
+
+    .cardinality-n {
+      background: #eafaf1;
+      color: #27ae60;
+      border-color: #27ae60;
+    }
+
+    .controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    .legend {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      max-width: 300px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+    }
+
+    .legend-shape {
+      width: 30px;
+      height: 30px;
+      margin-right: 10px;
+      border: 3px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .legend-rectangle {
+      border-color: #3498db;
+      background: white;
+    }
+
+    .legend-diamond {
+      border-color: #f1c40f;
+      background: #fff9e6;
+      transform: rotate(45deg);
+    }
+
+    .legend-diamond div {
+      transform: rotate(-45deg);
+    }
+
+    .instructions {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 40px;
+      border-left: 5px solid #3498db;
+    }
+
+    .instructions h3 {
+      color: #2c3e50;
+      margin-bottom: 15px;
+    }
+
+    .instructions ul {
+      padding-left: 20px;
+    }
+
+    .instructions li {
+      margin: 8px 0;
+      color: #555;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="controls">
+    <button class="btn" onclick="zoomIn()">Zoom In</button>
+    <button class="btn" onclick="zoomOut()">Zoom Out</button>
+    <button class="btn" onclick="resetView()">Reset</button>
+  </div>
+
+  <div class="legend">
+    <h3>Chen Notation Legend</h3>
+    <div class="legend-item">
+      <div class="legend-shape legend-rectangle">E</div>
+      <div>Entity (Rectangle)</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-shape legend-diamond">
+        <div>R</div>
+      </div>
+      <div>Relationship (Diamond)</div>
+    </div>
+    <div class="legend-item">
+      <div style="width: 40px; height: 3px; background: #7f8c8d; margin-right: 10px;"></div>
+      <div>Connection Line</div>
+    </div>
+    <div class="legend-item">
+      <div class="cardinality cardinality-1" style="margin-right: 10px;">1</div>
+      <div>One (Cardinality)</div>
+    </div>
+    <div class="legend-item">
+      <div class="cardinality cardinality-m" style="margin-right: 10px;">M</div>
+      <div>Many (Cardinality)</div>
+    </div>
+  </div>
+
+  <div class="container">
+    <h1>Chen Notation ER Diagram - Project Management System</h1>
+
+    <div id="diagram" style="position: relative; width: 1500px; height: 900px;">
+      <!-- Entities and relationships will be drawn here -->
+    </div>
+
+    <div class="instructions">
+      <h3>How to Read This Diagram</h3>
+      <ul>
+        <li><strong>Rectangles</strong> represent Entities (Database Tables)</li>
+        <li><strong>Diamonds</strong> represent Relationships between entities</li>
+        <li><strong>Numbers on lines</strong> show cardinality (1=One, M=Many, N=Many)</li>
+        <li><strong>Solid lines</strong> show required relationships</li>
+        <li><strong>Dashed lines</strong> show optional relationships (0..1)</li>
+        <li><strong>project_users</strong> is a Many-to-Many relationship resolved as an associative entity</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    let zoom = 1.0;
+    const diagram = document.getElementById('diagram');
+
+    // Entity positions (center points)
+    const entities = {
+      users: { x: 200, y: 200, width: 220, height: 150 },
+      projects: { x: 800, y: 200, width: 220, height: 150 },
+      tasks: { x: 500, y: 500, width: 220, height: 150 },
+      comments: { x: 900, y: 500, width: 220, height: 150 }
+    };
+
+    // Relationship positions
+    const relationships = [
+      { id: 'leads', x: 500, y: 180, label: 'Leads', from: 'projects', to: 'users' },
+      { id: 'has', x: 650, y: 350, label: 'Has', from: 'projects', to: 'tasks' },
+      { id: 'assigned', x: 350, y: 350, label: 'Assigned', from: 'users', to: 'tasks' },
+      { id: 'writes', x: 700, y: 350, label: 'Writes', from: 'users', to: 'comments' },
+      { id: 'belongs', x: 800, y: 350, label: 'Belongs', from: 'tasks', to: 'comments' },
+      { id: 'works_on', x: 500, y: 100, label: 'Works On', from: 'users', to: 'projects' }
+    ];
+
+    // Cardinality configuration for each relationship
+    const cardinalities = {
+      'leads': { from: 'M', to: '1' }, // One user leads many projects
+      'has': { from: '1', to: 'M' }, // One project has many tasks
+      'assigned': { from: 'M', to: '0..1' }, // A task is assigned to 0 or 1 user
+      'writes': { from: '1', to: 'M' }, // One user writes many comments
+      'belongs': { from: '1', to: 'M' }, // One task has many comments
+      'works_on': { from: 'M', to: 'N' } // Many users work on many projects (M:N)
+    };
+
+    // Line styles for each relationship
+    const lineStyles = {
+      'assigned': 'dashed', // Optional relationship
+      'works_on': 'solid' // Required relationship
+    };
+
+    function initDiagram() {
+      diagram.innerHTML = '';
+
+      // Draw all entities
+      Object.keys(entities).forEach(entityId => {
+        drawEntity(entityId);
+      });
+
+      // Draw all relationships
+      relationships.forEach(rel => {
+        drawRelationship(rel);
+        drawConnection(rel);
+      });
+    }
+
+    function drawEntity(entityId) {
+      const e = entities[entityId];
+      const div = document.createElement('div');
+      div.className = 'entity';
+      div.id = `entity-${entityId}`;
+      div.style.left = `${e.x - e.width / 2}px`;
+      div.style.top = `${e.y - e.height / 2}px`;
+      div.style.width = `${e.width}px`;
+      div.style.height = `${e.height}px`;
+      div.style.transform = `scale(${zoom})`;
+
+      div.innerHTML = `
+                <div class="entity-title">${entityId}</div>
+                <div style="font-size: 12px; color: #555; margin-top: 5px;">
+                    ${getEntityAttributes(entityId)}
+                </div>
+            `;
+
+      diagram.appendChild(div);
+    }
+
+    function getEntityAttributes(entityId) {
+      const attributes = {
+        users: 'id(PK), name, email, level, is_team_lead',
+        projects: 'id(PK), title, deadline, team_lead_id(FK)',
+        tasks: 'id(PK), title, status, project_id(FK), assigned_to(FK)',
+        comments: 'id(PK), content, task_id(FK), user_id(FK)'
+      };
+      return attributes[entityId] || '';
+    }
+
+    function drawRelationship(rel) {
+      const div = document.createElement('div');
+      div.className = 'relationship';
+      div.id = `rel-${rel.id}`;
+      div.style.left = `${rel.x - 50}px`;
+      div.style.top = `${rel.y - 50}px`;
+      div.style.transform = `rotate(45deg) scale(${zoom})`;
+
+      div.innerHTML = `<div class="relationship-label">${rel.label}</div>`;
+      diagram.appendChild(div);
+    }
+
+    function drawConnection(rel) {
+      const fromEntity = entities[rel.from];
+      const toEntity = entities[rel.to];
+      const relCenter = { x: rel.x, y: rel.y };
+
+      // Calculate angles and distances
+      const angleFrom = Math.atan2(
+        relCenter.y - fromEntity.y,
+        relCenter.x - fromEntity.x
+      );
+
+      const angleTo = Math.atan2(
+        toEntity.y - relCenter.y,
+        toEntity.x - relCenter.x
+      );
+
+      // Draw line from entity to relationship
+      drawLine(
+        fromEntity.x + Math.cos(angleFrom) * 110,
+        fromEntity.y + Math.sin(angleFrom) * 75,
+        relCenter.x - Math.cos(angleFrom) * 70,
+        relCenter.y - Math.sin(angleFrom) * 70,
+        lineStyles[rel.id] || 'solid'
+      );
+
+      // Draw line from relationship to entity
+      drawLine(
+        relCenter.x + Math.cos(angleTo) * 70,
+        relCenter.y + Math.sin(angleTo) * 70,
+        toEntity.x - Math.cos(angleTo) * 110,
+        toEntity.y - Math.sin(angleTo) * 75,
+        lineStyles[rel.id] || 'solid'
+      );
+
+      // Add cardinality labels
+      const card = cardinalities[rel.id];
+      if (card) {
+        // From side cardinality (near entity)
+        const fromCardX = fromEntity.x + Math.cos(angleFrom) * 130;
+        const fromCardY = fromEntity.y + Math.sin(angleFrom) * 90;
+        drawCardinality(fromCardX, fromCardY, card.from, rel.id + '-from');
+
+        // To side cardinality (near entity)
+        const toCardX = toEntity.x - Math.cos(angleTo) * 130;
+        const toCardY = toEntity.y - Math.sin(angleTo) * 90;
+        drawCardinality(toCardX, toCardY, card.to, rel.id + '-to');
+      }
+    }
+
+    function drawLine(x1, y1, x2, y2, style = 'solid') {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+      const line = document.createElement('div');
+      line.className = `line ${style === 'dashed' ? 'line-dashed' : ''}`;
+      line.style.left = `${x1}px`;
+      line.style.top = `${y1}px`;
+      line.style.width = `${length}px`;
+      line.style.transform = `rotate(${angle}deg)`;
+      line.style.transform += ` scale(${zoom})`;
+
+      diagram.appendChild(line);
+
+      // Add arrow at the end if needed
+      if (style !== 'dashed') {
+        const arrow = document.createElement('div');
+        arrow.className = 'arrow arrow-end';
+        arrow.style.left = `${x2}px`;
+        arrow.style.top = `${y2}px`;
+        arrow.style.transform = `rotate(${angle}deg) scale(${zoom})`;
+        diagram.appendChild(arrow);
+      }
+    }
+
+    function drawCardinality(x, y, value, id) {
+      const div = document.createElement('div');
+      div.className = 'cardinality';
+
+      // Determine class based on value
+      if (value === '1') div.className += ' cardinality-1';
+      else if (value === 'M') div.className += ' cardinality-m';
+      else if (value === 'N') div.className += ' cardinality-n';
+
+      div.id = `card-${id}`;
+      div.style.left = `${x - 15}px`;
+      div.style.top = `${y - 15}px`;
+      div.style.transform = `scale(${zoom})`;
+      div.textContent = value;
+
+      diagram.appendChild(div);
+    }
+
+    // Zoom functions
+    function zoomIn() {
+      zoom = Math.min(2.0, zoom + 0.1);
+      applyZoom();
+    }
+
+    function zoomOut() {
+      zoom = Math.max(0.5, zoom - 0.1);
+      applyZoom();
+    }
+
+    function resetView() {
+      zoom = 1.0;
+      applyZoom();
+    }
+
+    function applyZoom() {
+      const elements = diagram.querySelectorAll('.entity, .relationship, .line, .arrow, .cardinality');
+      elements.forEach(el => {
+        // Preserve rotation for relationships
+        if (el.classList.contains('relationship')) {
+          const current = el.style.transform;
+          const newTransform = current.replace(/scale\([0-9.]+\)/, `scale(${zoom})`);
+          el.style.transform = newTransform;
+        } else {
+          el.style.transform = `scale(${zoom})`;
+        }
+      });
+    }
+
+    // Make elements draggable
+    let draggedElement = null;
+    let offsetX = 0, offsetY = 0;
+
+    diagram.addEventListener('mousedown', (e) => {
+      const element = e.target.closest('.entity, .relationship');
+      if (element) {
+        draggedElement = element;
+        const rect = element.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        element.style.zIndex = '1000';
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!draggedElement) return;
+
+      const containerRect = diagram.getBoundingClientRect();
+      const x = e.clientX - containerRect.left - offsetX;
+      const y = e.clientY - containerRect.top - offsetY;
+
+      draggedElement.style.left = `${x}px`;
+      draggedElement.style.top = `${y}px`;
+
+      // If it's an entity, update its position in our data structure
+      const entityMatch = draggedElement.id.match(/entity-(.+)/);
+      if (entityMatch) {
+        const entityId = entityMatch[1];
+        const width = entities[entityId].width;
+        const height = entities[entityId].height;
+        entities[entityId].x = x + width / 2;
+        entities[entityId].y = y + height / 2;
+      }
+
+      // If it's a relationship, update and redraw connections
+      const relMatch = draggedElement.id.match(/rel-(.+)/);
+      if (relMatch) {
+        const relId = relMatch[1];
+        const relationship = relationships.find(r => r.id === relId);
+        if (relationship) {
+          relationship.x = x + 50;
+          relationship.y = y + 50;
+
+          // Remove old lines and cardinalities
+          document.querySelectorAll('.line, .arrow, .cardinality').forEach(el => {
+            if (el.id && el.id.includes(relId)) {
+              el.remove();
+            }
+          });
+
+          // Redraw connection
+          drawConnection(relationship);
+        }
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (draggedElement) {
+        draggedElement.style.zIndex = '';
+        draggedElement = null;
+      }
+    });
+
+    // Initialize the diagram
+    initDiagram();
+  </script>
+</body>
+
+</html>

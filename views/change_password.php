@@ -9,8 +9,8 @@ if (!isLoggedIn()) {
 <div class="row justify-content-center">
   <div class="col-md-6">
     <div class="card">
-      <div class="card-header">Change Password</div>
-      <div class="card-body">
+      <h5 class="card-header bg-warning">Change Password</h5>
+      <div class="card-body shadow">
         <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/auth_controller.php">
           <input type="hidden" name="action" value="change_password">
           <div class="mb-3">

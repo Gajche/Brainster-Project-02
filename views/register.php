@@ -9,7 +9,7 @@ if (isLoggedIn()) {
 <div class="row justify-content-center">
   <div class="col-md-6">
     <div class="card">
-      <div class="card-header">Register</div>
+      <h4 class="card-header bg-primary text-white text-center">Register</h4>
       <div class="card-body">
         <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/auth_controller.php">
           <input type="hidden" name="action" value="register">
@@ -38,9 +38,9 @@ if (isLoggedIn()) {
               <option value="Junior">Junior</option>
             </select>
           </div>
-          <button type="submit" class="btn btn-primary">Register</button>
+          <button type="submit" class="btn btn-primary w-100 btn-lg">Register</button>
         </form>
-        <p class="mt-3">Already have an account? <a href="<?= Config::getBaseUrl() ?>index.php?page=login">Login here</a>.</p>
+        <p class="mt-3">Already have an account? <a href="<?= Config::getBaseUrl() ?>index.php?page=login" class="text-decoration-none fw-bold">Login here</a>.</p>
       </div>
     </div>
   </div>

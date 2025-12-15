@@ -49,14 +49,26 @@ function handleRegister()
     exit;
   }
 
+
   if ($password !== $repeatPassword) {
     $_SESSION[Config::FLASH_ERROR] = 'Passwords do not match.';
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=register');
     exit;
   }
 
-  if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+  // New: Enhanced email regex validation (more strict than filter_var)
+  if (!preg_match('/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $email)) {
     $_SESSION[Config::FLASH_ERROR] = 'Invalid email format.';
+    header('Location: ' . Config::getBaseUrl() . 'index.php?page=register');
+    exit;
+  }
+
+  // Sanitize name (prevents special chars/XSS)
+  $name = htmlspecialchars($name); // Sanitize specials
+
+  // Optional: Add password length check for strength (spec implies edge cases)
+  if (strlen($password) < 6) {
+    $_SESSION[Config::FLASH_ERROR] = 'Password must be at least 6 characters.';
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=register');
     exit;
   }

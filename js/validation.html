@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Validation Test - Module Version</title>
+  <style>
+    .is-invalid {
+      border: 2px solid #dc3545 !important;
+      background-color: #fff8f8;
+    }
+
+    .invalid-feedback {
+      color: #dc3545;
+      font-size: 14px;
+      margin-top: 5px;
+      display: block;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f7f9fc;
+    }
+
+    .test-section {
+      background: white;
+      padding: 25px;
+      margin: 20px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: #333;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .result {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+
+    .valid {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .invalid {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .console-box {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      margin: 20px 0;
+      overflow-x: auto;
+    }
+
+    .test-button {
+      background: #28a745;
+      margin-right: 10px;
+    }
+
+    .test-button:hover {
+      background: #218838;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🧪 Validation.js Testing Suite</h1>
+  <p>This works with your original validation.js <strong>WITHOUT editing it</strong>.</p>
+
+  <div class="console-box">
+    <strong>How it works:</strong> We're using <code>type="module"</code> to import your ES6 module
+  </div>
+
+  <!-- Test Section 1: Required Field -->
+  <div class="test-section">
+    <h2>Test 1: Required Field Validation</h2>
+    <form id="requiredTestForm">
+      <input type="text" id="requiredField" placeholder="This field is required - try leaving it empty">
+      <button type="submit" class="test-button">Test Required Field</button>
+    </form>
+    <div id="requiredResult" class="result"></div>
+  </div>
+
+  <!-- Test Section 2: Email Validation -->
+  <div class="test-section">
+    <h2>Test 2: Email Format Validation</h2>
+    <form id="emailTestForm">
+      <input type="email" id="emailField" placeholder="test@example.com - try 'invalid-email'">
+      <button type="submit" class="test-button">Test Email Validation</button>
+    </form>
+    <div id="emailResult" class="result"></div>
+  </div>
+
+  <!-- Test Section 3: Password Validation -->
+  <div class="test-section">
+    <h2>Test 3: Password Length Validation</h2>
+    <form id="passwordTestForm">
+      <input type="password" id="passwordField" placeholder="Must be 8+ characters - try '123'">
+      <button type="submit" class="test-button">Test Password Validation</button>
+    </form>
+    <div id="passwordResult" class="result"></div>
+  </div>
+
+  <!-- Test Section 4: Comprehensive Form -->
+  <div class="test-section">
+    <h2>Test 4: Complete Form Test</h2>
+    <form id="completeForm">
+      <input type="text" id="nameField" required placeholder="Name (required)">
+      <input type="email" id="completeEmail" required placeholder="Email (required)">
+      <input type="password" id="completePassword" required placeholder="Password (required, 8+ chars)">
+      <textarea id="messageField" required placeholder="Message (required)"></textarea>
+      <select id="countryField" required>
+        <option value="">Select a country (required)</option>
+        <option value="us">United States</option>
+        <option value="uk">United Kingdom</option>
+        <option value="ca">Canada</option>
+      </select>
+      <button type="submit" class="test-button">Test Complete Form</button>
+    </form>
+    <div id="completeResult" class="result"></div>
+  </div>
+
+  <!-- Interactive Testing Panel -->
+  <div class="test-section">
+    <h2>🎮 Interactive Console Testing</h2>
+    <div class="console-box">
+      <p>Open Browser Console (F12) and try these:</p>
+      <code>testRequiredField()</code><br>
+      <code>testEmailField()</code><br>
+      <code>testPasswordField()</code><br>
+      <code>testAllAtOnce()</code><br>
+      <code>clearAllErrors()</code>
+    </div>
+    <button onclick="runAllTests()" style="background: #6c757d;">Run All Tests</button>
+    <button onclick="clearAllErrors()" style="background: #ffc107; color: black;">Clear All Errors</button>
+  </div>
+
+  <!-- Import and run the module -->
+  <script type="module">
+    // Import your validation.js module
+    import { validateForm } from './validation.js';
+
+    // Make functions globally available for console testing
+    window.validateForm = validateForm;
+
+    // Get references to all forms
+    const requiredForm = document.getElementById('requiredTestForm');
+    const emailForm = document.getElementById('emailTestForm');
+    const passwordForm = document.getElementById('passwordTestForm');
+    const completeForm = document.getElementById('completeForm');
+
+    // Helper function to show results
+    function showResult(elementId, isValid, formName) {
+      const resultDiv = document.getElementById(elementId);
+      if (isValid) {
+        resultDiv.textContent = `✅ ${formName} is VALID - Form would submit successfully!`;
+        resultDiv.className = 'result valid';
+      } else {
+        resultDiv.textContent = `❌ ${formName} is INVALID - Check error messages above`;
+        resultDiv.className = 'result invalid';
+      }
+    }
+
+    // Setup form event listeners
+    requiredForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const isValid = validateForm(requiredForm);
+      showResult('requiredResult', isValid, 'Required Field Test');
+    });
+
+    emailForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const isValid = validateForm(emailForm);
+      showResult('emailResult', isValid, 'Email Test');
+    });
+
+    passwordForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const isValid = validateForm(passwordForm);
+      showResult('passwordResult', isValid, 'Password Test');
+    });
+
+    completeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const isValid = validateForm(completeForm);
+      showResult('completeResult', isValid, 'Complete Form Test');
+    });
+
+    // ===== Console Testing Functions =====
+    window.testRequiredField = function () {
+      console.log('🧪 Testing Required Field...');
+      const field = document.getElementById('requiredField');
+      field.value = ''; // Make it empty
+      const isValid = validateForm(requiredForm);
+      console.log(`Result: ${isValid ? '✅ Valid' : '❌ Invalid'}`);
+      return isValid;
+    };
+
+    window.testEmailField = function () {
+      console.log('🧪 Testing Email Field...');
+      const field = document.getElementById('emailField');
+
+      // Test invalid email
+      field.value = 'bad-email';
+      let isValid = validateForm(emailForm);
+      console.log(`"bad-email": ${isValid ? '✅ Valid' : '❌ Invalid'}`);
+
+      // Test valid email
+      field.value = 'good@example.com';
+      isValid = validateForm(emailForm);
+      console.log(`"good@example.com": ${isValid ? '✅ Valid' : '❌ Invalid'}`);
+
+      return isValid;
+    };
+
+    window.testPasswordField = function () {
+      console.log('🧪 Testing Password Field...');
+      const field = document.getElementById('passwordField');
+
+      // Test short password
+      field.value = '123';
+      let isValid = validateForm(passwordForm);
+      console.log(`"123" (3 chars): ${isValid ? '✅ Valid' : '❌ Invalid'}`);
+
+      // Test valid password
+      field.value = '12345678';
+      isValid = validateForm(passwordForm);
+      console.log(`"12345678" (8 chars): ${isValid ? '✅ Valid' : '❌ Invalid'}`);
+
+      return isValid;
+    };
+
+    window.testAllAtOnce = function () {
+      console.log('🧪 Testing ALL forms at once...');
+      console.log('1. Required Form:', validateForm(requiredForm) ? '✅' : '❌');
+      console.log('2. Email Form:', validateForm(emailForm) ? '✅' : '❌');
+      console.log('3. Password Form:', validateForm(passwordForm) ? '✅' : '❌');
+      console.log('4. Complete Form:', validateForm(completeForm) ? '✅' : '❌');
+    };
+
+    window.clearAllErrors = function () {
+      console.log('🧹 Clearing all errors...');
+      // Clear all invalid classes
+      document.querySelectorAll('.is-invalid').forEach(el => {
+        el.classList.remove('is-invalid');
+      });
+      // Remove all error messages
+      document.querySelectorAll('.invalid-feedback').forEach(el => {
+        el.remove();
+      });
+      // Clear all result displays
+      document.querySelectorAll('.result').forEach(el => {
+        el.textContent = '';
+        el.className = 'result';
+      });
+    };
+
+    window.runAllTests = function () {
+      console.log('🚀 Running all tests...');
+      testRequiredField();
+      testEmailField();
+      testPasswordField();
+      testAllAtOnce();
+    };
+
+    // Log success
+    console.log('✅ Validation.js module loaded successfully!');
+    console.log('Available in console: validateForm(), testRequiredField(), testEmailField(), etc.');
+
+  </script>
+
+  <!-- Fallback for browsers without module support -->
+  <noscript>
+    <div style="color: red; padding: 20px; background: #ffe6e6;">
+      JavaScript is required to run these tests. Please enable JavaScript.
+    </div>
+  </noscript>
+
+  <script>
+    // Provide helpful console message for non-module browsers
+    if (!HTMLScriptElement.supports || !HTMLScriptElement.supports('module')) {
+      console.warn('Your browser may not fully support ES6 modules. For best results, use Chrome, Firefox, or Edge.');
+    }
+  </script>
+</body>
+
+</html>
