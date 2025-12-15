@@ -1,11 +1,7 @@
 <?php
 
-require_once __DIR__ . '/../includes/config.php';  // Relative path to load Config class first
-// require_once Config::ROOT_DIR . '/includes/config.php';
-require_once Config::ROOT_DIR . '/models/Database.php';
-require_once Config::ROOT_DIR . '/models/User.php';
-require_once Config::ROOT_DIR . '/models/Project.php';
-require_once Config::ROOT_DIR . '/models/Comment.php';  // For auto-comments
+// 🎯 ONLY ONE LINE NEEDED - autoload handles the rest!
+require_once __DIR__ . '/../autoload.php';
 
 class Task
 {
@@ -61,7 +57,7 @@ class Task
 
     $project = Project::getById($data['project_id']);
     if (!$project) {
-      return false; // Ensure project exists
+      return false;
     }
 
     $db = Database::getInstance();
@@ -72,7 +68,7 @@ class Task
     return false;
   }
 
-  // Assign task (with stricter, role-aware permission checks)
+  // Assign task
   public function assign($newAssigneeId, $userId)
   {
     $db = Database::getInstance();
@@ -81,19 +77,16 @@ class Task
       return false;
     }
 
-    // Action allowed if Admin or Team Lead of this project.
     if (isAdmin() || User::isProjectLead($userId, $this->project_id)) {
       if ($newAssigneeId !== null && !$assigningUser->canAssignTaskTo($newAssigneeId, $this->project_id)) {
-        return false; // Team lead still must assign to valid team members.
+        return false;
       }
       $stmt = $db->prepare('UPDATE tasks SET assigned_to = ? WHERE id = ?');
       return $stmt->execute([$newAssigneeId, $this->id]);
     }
 
-    // From this point, user is not an Admin or Team Lead.
     $currentAssignee = $this->getAssignedTo() ? User::getById($this->getAssignedTo()) : null;
 
-    // Allow a user to assign a task to themselves if it's currently unassigned.
     if ($newAssigneeId == $userId && $currentAssignee === null) {
       if ($assigningUser->canAssignTaskTo($newAssigneeId, $this->project_id)) {
         $stmt = $db->prepare('UPDATE tasks SET assigned_to = ? WHERE id = ?');
@@ -101,21 +94,17 @@ class Task
       }
     }
 
-    // Check if user has permission to take action on the task based on current assignee
     $permission = false;
     if ($currentAssignee === null) {
-      // A Senior or Mid can assign an unassigned task.
       if ($assigningUser->getLevel() === 'Senior' || $assigningUser->getLevel() === 'Mid') {
         $permission = true;
       }
     } else {
-      // Mid-level users can reassign tasks from themselves or Juniors.
       if ($assigningUser->getLevel() === 'Mid') {
         if ($currentAssignee->getId() == $assigningUser->getId() || $currentAssignee->getLevel() === 'Junior') {
           $permission = true;
         }
       }
-      // Regular Seniors can reassign tasks from themselves, Mid, or Juniors.
       if ($assigningUser->getLevel() === 'Senior') {
         if ($currentAssignee->getId() == $assigningUser->getId() || in_array($currentAssignee->getLevel(), ['Mid', 'Junior'])) {
           $permission = true;
@@ -128,10 +117,10 @@ class Task
       return $stmt->execute([$newAssigneeId, $this->id]);
     }
 
-    return false; // Default to deny
+    return false;
   }
 
-  // Update status (with permission, add auto-comment)
+  // Update status
   public function updateStatus($newStatus, $userId)
   {
     $user = User::getById($userId);
@@ -146,7 +135,6 @@ class Task
     $stmt = $db->prepare('UPDATE tasks SET status = ? WHERE id = ?');
     $exec = $stmt->execute([$newStatus, $this->id]);
     if ($exec) {
-      // Add auto-comment
       $content = '[' . $user->getName() . '] changed the status from ' . $oldStatus . ' to ' . $newStatus;
       Comment::create(['task_id' => $this->id, 'user_id' => $userId, 'content' => $content]);
       return true;
@@ -154,27 +142,24 @@ class Task
     return false;
   }
 
-  // Update task details (title/desc, with permissions)
+  // Update task details
   public function update($data, $userId)
   {
     $user = User::getById($userId);
     $project = Project::getById($this->project_id);
 
     if (!$user || !$project) {
-      return false; // Basic check
+      return false;
     }
 
-    // Permission checks
     $isAdmin = $user->getLevel() === 'Admin';
     $isTeamLead = $project->canManageTeam($userId);
     $isSeniorInProject = ($user->getLevel() === 'Senior' && User::isInProject($userId, $this->project_id));
 
-    // Prevent regular Seniors from editing Team Lead's tasks
     if ($isSeniorInProject && $this->getAssignedTo() == $project->getTeamLeadId()) {
-      return false; // Prevent editing Team Lead's tasks
+      return false;
     }
 
-    // Allow update if user is Admin, Team Lead, or a Senior in the project
     if (!$isAdmin && !$isTeamLead && !$isSeniorInProject) {
       return false;
     }
@@ -199,7 +184,7 @@ class Task
     return false;
   }
 
-  // Delete task (Admin or Team Lead of project)
+  // Delete task
   public static function delete($id, $userId)
   {
     $task = self::getById($id);
@@ -214,7 +199,6 @@ class Task
       return false;
     }
 
-    // Only allow deletion if the user is an Admin or the Team Lead of this specific project.
     if ($user->getLevel() !== 'Admin' && $project->getTeamLeadId() != $userId) {
       return false;
     }

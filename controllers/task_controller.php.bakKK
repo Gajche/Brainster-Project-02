@@ -1,7 +1,18 @@
 <?php
 
-// 🎯 ONE LINE REPLACES ALL THE REQUIRE_ONCE STATEMENTS!
-require_once __DIR__ . '/../autoload.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/api.php';
+require_once Config::ROOT_DIR . '/includes/helpers.php';
+require_once Config::ROOT_DIR . '/models/Database.php';
+require_once Config::ROOT_DIR . '/models/User.php';
+require_once Config::ROOT_DIR . '/models/Project.php';
+require_once Config::ROOT_DIR . '/models/Task.php';
+require_once Config::ROOT_DIR . '/models/Comment.php';
+
+// Session start
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
 
 // Must be logged in
 if (!isset($_SESSION['user_id'])) {

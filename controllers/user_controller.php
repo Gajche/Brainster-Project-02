@@ -1,9 +1,11 @@
 <?php
 
-require_once __DIR__ . '/../includes/config.php';
-require_once __DIR__ . '/../includes/api.php';
-require_once Config::ROOT_DIR . '/models/Database.php';
-require_once Config::ROOT_DIR . '/models/User.php';
+require_once __DIR__ . '/../autoload.php';
+
+// require_once __DIR__ . '/../includes/config.php';
+// require_once __DIR__ . '/../includes/api.php';
+// require_once Config::ROOT_DIR . '/models/Database.php';
+// require_once Config::ROOT_DIR . '/models/User.php';
 
 // Start session if not already
 if (session_status() === PHP_SESSION_NONE) {

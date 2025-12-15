@@ -1,4 +1,3 @@
-// taskModal.js - MINIMAL VERSION (remove ALL form binding)
 import { showToast } from "./ui.js";
 
 export function loadModalContent(url, data, modalTitle, modalBody) {
@@ -13,20 +12,27 @@ export function loadModalContent(url, data, modalTitle, modalBody) {
 
   return $.get(url, data)
     .done(function (response) {
+      // NEW API FORMAT: data is inside response.data
       if (response.success && response.data) {
         modalTitle.text(response.data.title || "Task Details");
-        modalBody.html(response.data.body || "<p>No content</p>");
+        modalBody.html(response.data.body || "<p>No content available.</p>");
       } else {
         modalTitle.text("Error");
         modalBody.html(
-          `<div class="alert alert-danger">${response.message || "Error"}</div>`
+          `<div class="alert alert-danger">
+            ${response.message || "Could not load content."}
+          </div>`
         );
         showToast("danger", response.message || "Failed to load");
       }
     })
-    .fail(function () {
+    .fail(function (jqXHR) {
       modalTitle.text("Error");
-      modalBody.html('<div class="alert alert-danger">Network error</div>');
+      modalBody.html(
+        `<div class="alert alert-danger">
+          Network error. Please try again.
+        </div>`
+      );
       showToast("danger", "Connection failed");
     });
 }

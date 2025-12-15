@@ -5,14 +5,12 @@ if (!isLoggedIn()) {
   exit;
 }
 
-require_once Config::ROOT_DIR . '/models/Project.php';
-require_once Config::ROOT_DIR . '/models/Task.php';
-require_once Config::ROOT_DIR . '/models/User.php';
+require_once __DIR__ . '/../autoload.php';
 
 $projectId = $_GET['id'] ?? 0;
 $project = Project::getById($projectId);
 $userId = $_SESSION['user_id'];
-$userLevel = $_SESSION['user_level'] ?? null; // Get user level from session
+$userLevel = $_SESSION['user_level'] ?? null;
 $isTeamLead = $project && $project->canManageTeam($userId);
 
 if (!$project || !$project->canAccess($userId)) {
@@ -21,8 +19,86 @@ if (!$project || !$project->canAccess($userId)) {
   exit;
 }
 
+// Helper functions for project status
+function getDaysRemaining($deadline)
+{
+  if (!$deadline) return null;
+  $deadlineDate = strtotime($deadline);
+  $today = strtotime(date('Y-m-d'));
+  $diff = $deadlineDate - $today;
+  return floor($diff / (60 * 60 * 24));
+}
+
+function getProjectStatusInfo($project)
+{
+  $status = $project->getStatus();
+  $deadline = $project->getDeadline();
+
+  if ($status === 'Done') {
+    return [
+      'headerClass' => 'bg-primary text-white',
+      'cardClass' => 'border-primary',
+      'badge' => '✓ Project Completed',
+      'badgeClass' => 'bg-primary',
+      'textClass' => 'text-primary',
+      'icon' => '✓',
+      'message' => 'This project has been completed'
+    ];
+  }
+
+  $daysRemaining = getDaysRemaining($deadline);
+
+  if ($daysRemaining === null) {
+    return [
+      'headerClass' => 'bg-secondary text-white',
+      'cardClass' => 'border-secondary',
+      'badge' => '🔄 Active Project',
+      'badgeClass' => 'bg-secondary',
+      'textClass' => 'text-secondary',
+      'icon' => '🔄',
+      'message' => 'No deadline set'
+    ];
+  }
+
+  if ($daysRemaining < 0) {
+    return [
+      'headerClass' => 'bg-danger text-white',
+      'cardClass' => 'border-danger',
+      'badge' => '⚠️ Project Overdue',
+      'badgeClass' => 'bg-danger',
+      'textClass' => 'text-danger',
+      'icon' => '⚠️',
+      'message' => abs($daysRemaining) . ' days overdue'
+    ];
+  }
+
+  if ($daysRemaining <= 7) {
+    return [
+      'headerClass' => 'bg-warning',
+      'cardClass' => 'border-warning',
+      'badge' => '⏰ Due Soon',
+      'badgeClass' => 'bg-warning text-dark',
+      'textClass' => 'text-warning',
+      'icon' => '⏰',
+      'message' => 'Only ' . $daysRemaining . ' days remaining'
+    ];
+  }
+
+  return [
+    'headerClass' => 'bg-success text-white',
+    'cardClass' => 'border-success',
+    'badge' => '✓ On Track',
+    'badgeClass' => 'bg-success',
+    'textClass' => 'text-success',
+    'icon' => '✓',
+    'message' => $daysRemaining . ' days remaining'
+  ];
+}
+
+$statusInfo = getProjectStatusInfo($project);
+$isProjectOverdue = strpos($statusInfo['badge'], 'Overdue') !== false;
+
 $team = User::getProjectTeam($projectId);
-// All users for add member dropdown (exclude current team)
 $allUsers = User::getAll();
 $availableMembers = array_filter($allUsers, function ($u) use ($team) {
   return !in_array($u['id'], array_column($team, 'id')) && $u['level'] !== 'Admin';
@@ -40,16 +116,31 @@ foreach ($tasks as $task) {
 }
 ?>
 
-<h2><?= htmlspecialchars($project->getTitle()) ?></h2>
+<h2>
+  <?= htmlspecialchars($project->getTitle()) ?>
+  <span class="badge <?= $statusInfo['badgeClass'] ?> ms-2"><?= $statusInfo['badge'] ?></span>
+</h2>
 
-<div class="card mb-4">
-  <div class="card-header">Project Details</div>
+<div class="card mb-4 <?= $statusInfo['cardClass'] ?>" style="border-width: 3px;">
+  <div class="card-header <?= $statusInfo['headerClass'] ?>">
+    <strong>Project Details</strong>
+    <span class="float-end"><?= $statusInfo['icon'] ?> <?= $statusInfo['message'] ?></span>
+  </div>
   <div class="card-body">
     <p><strong>Description:</strong> <?= htmlspecialchars($project->getDescription() ?: 'N/A') ?></p>
     <p><strong>Requirements:</strong> <?= htmlspecialchars($project->getRequirements() ?: 'N/A') ?></p>
     <p><strong>Estimated Time:</strong> <?= htmlspecialchars($project->getEstimatedTime() ?: 'N/A') ?></p>
-    <p><strong>Deadline:</strong> <?= htmlspecialchars($project->getDeadline() ?: 'N/A') ?></p>
-    <p><strong>Status:</strong> <?= htmlspecialchars($project->getStatus()) ?></p>
+    <p>
+      <strong>Deadline:</strong>
+      <span class="<?= $statusInfo['textClass'] ?> fw-bold">
+        <?= htmlspecialchars($project->getDeadline() ?: 'N/A') ?>
+      </span>
+    </p>
+    <p><strong>Status:</strong>
+      <span class="badge <?= $project->getStatus() === 'Done' ? 'bg-primary' : 'bg-info' ?>">
+        <?= htmlspecialchars($project->getStatus()) ?>
+      </span>
+    </p>
     <?php if ($isTeamLead && $project->getStatus() === 'Active'): ?>
       <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/project_controller.php">
         <input type="hidden" name="action" value="mark_done">
@@ -161,10 +252,15 @@ foreach ($tasks as $task) {
             <?php
             $assigned = User::getById($task->getAssignedTo());
             $assignedName = $assigned ? htmlspecialchars($assigned->getName()) : 'Unassigned';
-            // Re-evaluate permissions for each task in the loop for display purposes
             $canEditDelete = $userLevel === 'Admin' || ($userLevel === 'Senior' && User::isInProject($userId, $projectId));
+
+            // Show overdue indicator if project is overdue and task is not Done
+            $showOverdue = $isProjectOverdue && $task->getStatus() !== 'Done';
             ?>
-            <div class="kanban-card" data-task-id="<?= $task->getId() ?>">
+            <div class="kanban-card <?= $showOverdue ? 'border-danger' : '' ?>" data-task-id="<?= $task->getId() ?>">
+              <?php if ($showOverdue): ?>
+                <span class="badge bg-danger mb-2">⚠️ OVERDUE</span>
+              <?php endif; ?>
               <div class="kanban-card-title"><?= htmlspecialchars($task->getTitle()) ?></div>
               <div class="kanban-card-meta">
                 <small>Assigned: <?= $assignedName ?></small><br>
@@ -196,7 +292,7 @@ foreach ($tasks as $task) {
   </div>
 </div>
 
-<!-- Edit Task Modal (Single instance) -->
+<!-- Edit Task Modal -->
 <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -211,7 +307,7 @@ foreach ($tasks as $task) {
   </div>
 </div>
 
-<!-- Edit Comment Modal (Single instance) -->
+<!-- Edit Comment Modal -->
 <div class="modal fade" id="editCommentModal" tabindex="-1" aria-labelledby="editCommentModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">

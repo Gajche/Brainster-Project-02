@@ -12,6 +12,9 @@ function post(url, data) {
     type: "POST",
     data: data,
     dataType: "json",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest",
+    },
   });
 }
 
@@ -36,15 +39,38 @@ export function handleAjaxFormSubmit(e) {
           "success",
           response.message || "Action completed successfully!"
         );
+
+        // CRITICAL FIX: Close any open Bootstrap modals
+        const openModal = document.querySelector(".modal.show");
+        if (openModal) {
+          const modalInstance = bootstrap.Modal.getInstance(openModal);
+          if (modalInstance) {
+            modalInstance.hide();
+          }
+        }
+
+        // Handle reload/redirect
         if (form.data("reload")) {
-          location.reload();
+          setTimeout(() => location.reload(), 3000); // Small delay so toast is visible
+        } else if (form.data("redirect")) {
+          setTimeout(
+            () => (window.location.href = form.data("redirect")),
+            3000
+          );
+        } else {
+          // Default: reload after 800ms to show updated data
+          setTimeout(() => location.reload(), 3000);
         }
       } else {
         showToast("danger", response.message || "An error occurred.");
       }
     })
-    .fail(function () {
-      showToast("danger", "Network error. Please try again.");
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      let errorMsg = "Network error. Please try again.";
+      if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+        errorMsg = jqXHR.responseJSON.message;
+      }
+      showToast("danger", errorMsg);
     })
     .always(function () {
       submitBtn.html(originalBtnText).prop("disabled", false);
@@ -67,7 +93,44 @@ export function changeTaskStatus(taskId, newStatus) {
         showToast("danger", response.message || "Failed to update status.");
       }
     })
-    .fail(function () {
-      showToast("danger", "Connection failed. Please try again.");
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      let errorMsg = "Connection failed. Please try again.";
+      if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+        errorMsg = jqXHR.responseJSON.message;
+      }
+      showToast("danger", errorMsg);
+    });
+}
+
+/**
+ * Optional helper for DELETE actions
+ */
+export function deleteResource(url, data, confirmMessage = "Are you sure?") {
+  if (!confirm(confirmMessage)) {
+    return Promise.resolve(false);
+  }
+
+  return post(url, data)
+    .done(function (response) {
+      if (response.success) {
+        showToast("success", response.message || "Deleted successfully!");
+
+        // Close modal if open
+        const openModal = document.querySelector(".modal.show");
+        if (openModal) {
+          const modalInstance = bootstrap.Modal.getInstance(openModal);
+          if (modalInstance) {
+            modalInstance.hide();
+          }
+        }
+
+        // Reload to reflect deletion
+        setTimeout(() => location.reload(), 3000);
+      } else {
+        showToast("danger", response.message || "Failed to delete.");
+      }
+    })
+    .fail(function (jqXHR) {
+      showToast("danger", "Delete failed. Please try again.");
     });
 }

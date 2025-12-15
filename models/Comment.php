@@ -1,10 +1,12 @@
 <?php
 
-require_once __DIR__ . '/../includes/config.php';  // Relative path to load Config class first
+require_once __DIR__ . '/../autoload.php';
+
+// require_once __DIR__ . '/../includes/config.php';  
 // require_once Config::ROOT_DIR . '/includes/config.php';
-require_once Config::ROOT_DIR . '/models/Database.php';
-require_once Config::ROOT_DIR . '/models/User.php';
-require_once Config::ROOT_DIR . '/models/Task.php';
+// require_once Config::ROOT_DIR . '/models/Database.php';
+// require_once Config::ROOT_DIR . '/models/User.php';
+// require_once Config::ROOT_DIR . '/models/Task.php';
 
 class Comment
 {
@@ -87,16 +89,16 @@ class Comment
   // Get comment details for AJAX response
   public function getDetails()
   {
-      $user = User::getById($this->user_id);
-      return [
-          'id' => $this->id,
-          'task_id' => $this->task_id,
-          'user_id' => $this->user_id,
-          'user_name' => $user ? $user->getName() : 'Unknown',
-          'content' => $this->content,
-          'created_at' => $this->created_at,
-          'edited' => $this->edited
-      ];
+    $user = User::getById($this->user_id);
+    return [
+      'id' => $this->id,
+      'task_id' => $this->task_id,
+      'user_id' => $this->user_id,
+      'user_name' => $user ? $user->getName() : 'Unknown',
+      'content' => $this->content,
+      'created_at' => $this->created_at,
+      'edited' => $this->edited
+    ];
   }
 
   // Getters

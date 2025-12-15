@@ -2,8 +2,6 @@ import { showToast } from "./ui.js";
 
 function handleLogin(e) {
   e.preventDefault();
-  e.stopImmediatePropagation(); // CRITICAL: Prevent duplicate handlers
-
   const form = $(e.currentTarget);
   const errorDiv = $("#login-error");
   const submitBtn = form.find('button[type="submit"]');
@@ -21,6 +19,7 @@ function handleLogin(e) {
     data: form.serialize(),
     dataType: "json",
     success: function (response) {
+      // THIS IS THE NEW STANDARD — check response.success
       if (response.success === true) {
         showToast("success", response.message || "Login successful!");
 
@@ -28,7 +27,7 @@ function handleLogin(e) {
           response.data?.redirect || "index.php?page=dashboard";
         setTimeout(() => {
           window.location.href = redirectUrl;
-        }, 2000);
+        }, 800);
       } else {
         errorDiv.text(response.message || "Login failed.").show();
       }
@@ -48,8 +47,5 @@ function handleLogin(e) {
 }
 
 export function initAuth() {
-  // Remove the ajax-form class if it exists to prevent double handling
-  const loginForm = $("#login-form");
-  loginForm.removeClass("ajax-form");
-  loginForm.on("submit", handleLogin);
+  $("#login-form").on("submit", handleLogin);
 }

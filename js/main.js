@@ -1,27 +1,57 @@
-// js/main.js — THIS IS THE ONE THAT WAS BROKEN
-
-import { initAuth } from "./auth.js";
-import { initKanban } from "./kanban.js";
-import { initTaskModals } from "./taskModal.js";
-import { initComments } from "./comment.js";
+// Main application entry point
+import { configureToastr } from "./ui.js";
+import {
+  initAuth,
+  initKanban,
+  initTaskModals,
+  initComments,
+} from "./modules.js";
 import { handleAjaxFormSubmit } from "./api.js";
-import { validateForm } from "./validation.js"; // New import for form validation
+import { validateForm } from "./validation.js";
+
+let formsBound = false;
 
 $(function () {
-  // THESE 5 LINES MUST BE HERE — ESPECIALLY initAuth() !!
-  initAuth(); // ← THIS WAS MISSING OR NOT EXECUTED
-  initKanban();
-  initTaskModals();
-  initComments();
+  // Configure Toastr ONCE with all settings
+  if (typeof toastr !== "undefined") {
+    configureToastr(); // This now sets timeOut to 8000ms
+  }
 
-  // Generic handler for all .ajax-form
-  $(document).on("submit", "form.ajax-form", function (e) {
-    const formEl = this;
-    if (!validateForm(formEl)) {
-      // New: Run validation before handling submit
-      e.preventDefault(); // Prevent submit if invalid
-      return; // Exit early
-    }
-    handleAjaxFormSubmit(e); // Proceed with original handler if valid
+  // Initialize modules
+  [initAuth, initKanban, initTaskModals, initComments].forEach((init) =>
+    init()
+  );
+
+  // Bind forms ONCE
+  if (!formsBound) {
+    $(document).on("submit", "form.ajax-form", function (e) {
+      e.stopImmediatePropagation(); // STOP other handlers
+
+      if (!validateForm(this)) {
+        e.preventDefault();
+        $(this).find(".is-invalid").first().focus();
+        return;
+      }
+
+      e.preventDefault(); // Prevent default AFTER validation
+      handleAjaxFormSubmit(e);
+    });
+
+    formsBound = true;
+  }
+
+  // Global AJAX error
+  $(document).ajaxError((e, jqXHR) => {
+    if (typeof toastr === "undefined" || jqXHR.status === 0) return;
+
+    const errorMsg = (() => {
+      try {
+        return JSON.parse(jqXHR.responseText)?.message || "Server error";
+      } catch {
+        return "Request failed";
+      }
+    })();
+
+    toastr.error(errorMsg);
   });
 });

@@ -5,8 +5,10 @@ if (!isAdmin()) {
   exit;
 }
 
-require_once Config::ROOT_DIR . '/models/Project.php';
-require_once Config::ROOT_DIR . '/models/User.php';
+require_once __DIR__ . '/../autoload.php';
+
+// require_once Config::ROOT_DIR . '/models/Project.php';
+// require_once Config::ROOT_DIR . '/models/User.php';
 
 $projects = Project::getAll();
 // Get eligible Team Leads (Seniors with is_team_lead=1)

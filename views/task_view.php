@@ -5,9 +5,11 @@ if (!isLoggedIn()) {
   exit;
 }
 
-require_once Config::ROOT_DIR . '/models/Task.php';
-require_once Config::ROOT_DIR . '/models/Comment.php';
-require_once Config::ROOT_DIR . '/models/User.php';
+require_once __DIR__ . '/../autoload.php';
+
+// require_once Config::ROOT_DIR . '/models/Task.php';
+// require_once Config::ROOT_DIR . '/models/Comment.php';
+// require_once Config::ROOT_DIR . '/models/User.php';
 
 $taskId = $_GET['id'] ?? 0;
 $task = Task::getById($taskId);

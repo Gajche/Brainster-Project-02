@@ -4,8 +4,21 @@
 // Entry point & router
 // ------------------------------------------------------------------
 
-// 🎯 ONE LINE REPLACES ALL THE REQUIRE_ONCE STATEMENTS!
-require_once __DIR__ . '/autoload.php';
+// Load configuration and helpers
+require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/helpers.php';
+// require_once 'autoload.php';
+
+// Load the standardized JSON API helpers — this is the key line!
+require_once __DIR__ . '/includes/api.php';
+
+// Database model (used in some controllers directly)
+require_once Config::ROOT_DIR . '/models/Database.php';
+
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
 
 // Determine which page to show
 $page = $_GET['page'] ?? (isLoggedIn() ? 'dashboard' : 'login');
@@ -87,7 +100,7 @@ $viewPath = Config::ROOT_DIR . "/views/{$page}.php";
 
   <?php require_once Config::ROOT_DIR . '/includes/footer.php'; ?>
 
-  <!-- Scripts -->
+  <!-- Scripts (keep your current order – works perfectly with Kanban + Sortable) -->
   <script src="js/jquery.min.js"></script>
   <script src="js/toastr.min.js"></script>
   <script src="js/bootstrap.bundle.min.js"></script>

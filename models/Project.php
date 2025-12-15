@@ -1,9 +1,11 @@
 <?php
 
-require_once __DIR__ . '/../includes/config.php';  // Relative path to load Config class first
+require_once __DIR__ . '/../autoload.php';
+
+// require_once __DIR__ . '/../includes/config.php';  
 // require_once Config::ROOT_DIR . '/includes/config.php';
-require_once Config::ROOT_DIR . '/models/Database.php';
-require_once Config::ROOT_DIR . '/models/User.php';  // For team/lead checks
+// require_once Config::ROOT_DIR . '/models/Database.php';
+// require_once Config::ROOT_DIR . '/models/User.php';  
 
 class Project
 {
