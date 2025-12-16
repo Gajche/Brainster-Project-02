@@ -1,0 +1,29 @@
+// js/admin_users.js - Handles Team Lead toggle
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Generic toggle function for level selects
+  function toggleTeamLead(selectEl) {
+    const teamLeadId = selectEl.dataset.teamLeadId;
+    const teamLeadCheckbox = document.getElementById(teamLeadId);
+    const container = teamLeadCheckbox
+      ? teamLeadCheckbox.closest(".form-check")
+      : null; // Get container for hiding
+
+    if (teamLeadCheckbox && container) {
+      if (selectEl.value !== "Senior") {
+        container.style.display = "none";
+        teamLeadCheckbox.disabled = true;
+        teamLeadCheckbox.checked = false;
+      } else {
+        container.style.display = "block";
+        teamLeadCheckbox.disabled = false;
+      }
+    }
+  }
+
+  // Attach to all .level-select elements (create and edits)
+  document.querySelectorAll(".level-select").forEach((select) => {
+    select.addEventListener("change", () => toggleTeamLead(select));
+    toggleTeamLead(select); // Initial state
+  });
+});

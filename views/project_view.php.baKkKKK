@@ -252,8 +252,6 @@ foreach ($tasks as $task) {
             <?php
             $assigned = User::getById($task->getAssignedTo());
             $assignedName = $assigned ? htmlspecialchars($assigned->getName()) : 'Unassigned';
-            $creator = User::getById($task->getCreatedBy());  // New: Get creator
-            $creatorName = $creator ? htmlspecialchars($creator->getName()) : 'Unknown';  // New: Creator name
             $canEditDelete = $userLevel === 'Admin' || ($userLevel === 'Senior' && User::isInProject($userId, $projectId));
 
             // Show overdue indicator if project is overdue and task is not Done
@@ -266,8 +264,7 @@ foreach ($tasks as $task) {
               <div class="kanban-card-title"><?= htmlspecialchars($task->getTitle()) ?></div>
               <div class="kanban-card-meta">
                 <small>Assigned: <?= $assignedName ?></small><br>
-                <small>Created: <?= htmlspecialchars($task->getCreatedAt()) ?></small><br>
-                <small>Created by: <?= $creatorName ?></small>
+                <small>Created: <?= htmlspecialchars($task->getCreatedAt()) ?></small>
               </div>
               <div class="kanban-card-actions mt-2">
                 <button class="btn btn-sm btn-info view-task-btn" data-task-id="<?= $task->getId() ?>">View</button>

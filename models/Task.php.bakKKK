@@ -12,7 +12,6 @@ class Task
   private $created_at;
   private $status;
   private $assigned_to;
-  private $created_by;  // New property for creator ID
 
   public function __construct($data)
   {
@@ -23,7 +22,6 @@ class Task
     $this->created_at = $data['created_at'] ?? null;
     $this->status = $data['status'] ?? 'To Do';
     $this->assigned_to = $data['assigned_to'] ?? null;
-    $this->created_by = $data['created_by'] ?? null;  // New in constructor
   }
 
   // Get task by ID
@@ -63,8 +61,8 @@ class Task
     }
 
     $db = Database::getInstance();
-    $stmt = $db->prepare('INSERT INTO tasks (project_id, title, description, created_by) VALUES (?, ?, ?, ?)');  // Added created_by
-    if ($stmt->execute([$data['project_id'], $data['title'], $data['description'], $userId])) {  // Pass $userId as creator
+    $stmt = $db->prepare('INSERT INTO tasks (project_id, title, description) VALUES (?, ?, ?)');
+    if ($stmt->execute([$data['project_id'], $data['title'], $data['description']])) {
       return $db->lastInsertId();
     }
     return false;
@@ -214,12 +212,6 @@ class Task
   public function getComments()
   {
     return Comment::getByTask($this->id);
-  }
-
-  // New getter for creator
-  public function getCreatedBy()
-  {
-    return $this->created_by;
   }
 
   // Getters

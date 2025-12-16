@@ -4,9 +4,11 @@
 
 // Ensure required models are loaded
 if (!class_exists('Task')) {
-  require_once Config::ROOT_DIR . '/models/Task.php';
-  require_once Config::ROOT_DIR . '/models/Comment.php';
-  require_once Config::ROOT_DIR . '/models/User.php';
+  require_once __DIR__ . '/../autoload.php';
+
+  // require_once Config::ROOT_DIR . '/models/Task.php';
+  // require_once Config::ROOT_DIR . '/models/Comment.php';
+  // require_once Config::ROOT_DIR . '/models/User.php';
 }
 
 

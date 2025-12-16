@@ -52,7 +52,7 @@ $viewPath = Config::ROOT_DIR . "/views/{$page}.php";
   <link rel="stylesheet" href="css/kanban.css">
 </head>
 
-<body>
+<body data-page="<?= $page ?>">
 
   <?php require_once Config::ROOT_DIR . '/includes/header.php'; ?>
 

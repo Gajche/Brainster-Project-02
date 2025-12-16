@@ -11,30 +11,6 @@ import { validateForm } from "./validation.js";
 
 let formsBound = false;
 
-// Page-specific module loader
-async function loadPageSpecificModules() {
-  const page = document.body.dataset.page;
-
-  switch (page) {
-    case "admin_users":
-      // Dynamically import admin_users.js module
-      const adminUsersModule = await import("./admin_users.js");
-      // If the module has an init function, call it
-      if (adminUsersModule.init) adminUsersModule.init();
-      break;
-
-    case "dashboard":
-      // You could load dashboard-specific modules here
-      break;
-
-    case "project_view":
-      // Project view specific modules
-      break;
-
-    // Add other pages as needed
-  }
-}
-
 $(function () {
   // Configure Toastr ONCE with all settings
   if (typeof toastr !== "undefined") {
@@ -45,9 +21,6 @@ $(function () {
   [initAuth, initKanban, initTaskModals, initComments].forEach((init) =>
     init()
   );
-
-  // Load page-specific modules
-  loadPageSpecificModules().catch(console.error);
 
   // Bind forms ONCE
   if (!formsBound) {

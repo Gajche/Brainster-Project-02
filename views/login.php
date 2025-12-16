@@ -64,7 +64,7 @@ if (isLoggedIn()) {
   </div>
 </div>
 
-<script type="module">
+<!-- <script type="module">
   import {
     initAuth
   } from "./js/auth.js";
@@ -72,4 +72,4 @@ if (isLoggedIn()) {
     console.log("Login page: attaching blue button handler...");
     initAuth();
   });
-</script>
+</script> -->

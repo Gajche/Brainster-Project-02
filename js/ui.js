@@ -1,5 +1,5 @@
 /**
- * Toastr notification wrapper with minimal, clean code
+ * Toastr notification wrappers and configuration
  * @param {'success'|'danger'|'warning'|'info'} type - Toast type
  * @param {string} message - Message to display
  * @param {number} [delay] - Auto-hide delay in ms (uses global config if not specified)
@@ -26,7 +26,7 @@ export function configureToastr() {
   toastr.options = {
     closeButton: true,
     progressBar: true,
-    positionClass: "toast-top-right",
+    positionClass: "toast-bottom-right",
     timeOut: 8000, // Changed to 8 seconds to match main.js
     extendedTimeOut: 1000,
     preventDuplicates: true, // Prevent duplicate toasts
