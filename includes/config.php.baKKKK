@@ -39,7 +39,7 @@ class Config
     return $protocol . $host . $basePath . '/';
   }
 
-  const USER_LEVELS = ['Senior', 'Mid', 'Junior'];
+  const USER_LEVELS = ['Admin', 'Senior', 'Mid', 'Junior'];
 
   const TASK_STATUSES = ['To Do', 'In Progress', 'QA', 'Done'];
 

@@ -46,10 +46,11 @@ $viewPath = Config::ROOT_DIR . "/views/{$page}.php";
   <title><?= Config::SITE_TITLE ?> - <?= ucfirst(str_replace('_', ' ', $page)) ?></title>
 
   <!-- Styles -->
-  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="vendor/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/custom.css">
-  <link rel="stylesheet" href="css/toastr.min.css">
+  <link rel="stylesheet" href="vendor/css/toastr.min.css">
   <link rel="stylesheet" href="css/kanban.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 
 <body data-page="<?= $page ?>">
@@ -88,10 +89,10 @@ $viewPath = Config::ROOT_DIR . "/views/{$page}.php";
   <?php require_once Config::ROOT_DIR . '/includes/footer.php'; ?>
 
   <!-- Scripts -->
-  <script src="js/jquery.min.js"></script>
-  <script src="js/toastr.min.js"></script>
-  <script src="js/bootstrap.bundle.min.js"></script>
-  <script src="js/Sortable.min.js"></script>
+  <script src="vendor/js/jquery.min.js"></script>
+  <script src="vendor/js/toastr.min.js"></script>
+  <script src="vendor/js/bootstrap.bundle.min.js"></script>
+  <script src="vendor/js/Sortable.min.js" async></script>
 
   <script type="module" src="js/main.js"></script>
 

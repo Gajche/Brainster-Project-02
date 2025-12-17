@@ -92,13 +92,6 @@ function handleCreate()
     exit;
   }
 
-  // Prevent creating Admin users via UI
-  if ($level === 'Admin') {
-    $_SESSION[Config::FLASH_ERROR] = 'Cannot create Admin users via UI. Admins must be added directly in the database.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_users');
-    exit;
-  }
-
   if ($is_team_lead && $level !== 'Senior') {
     $_SESSION[Config::FLASH_ERROR] = 'Only Senior users can be Team Leads.';
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_users');
@@ -133,13 +126,6 @@ function handleUpdate()
 
   if (empty($id) || empty($data)) {
     $_SESSION[Config::FLASH_ERROR] = 'Invalid data.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_users');
-    exit;
-  }
-
-  // Prevent promoting to Admin
-  if (isset($data['level']) && $data['level'] === 'Admin') {
-    $_SESSION[Config::FLASH_ERROR] = 'Cannot promote users to Admin via UI. Admins must be added directly in the database.';
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_users');
     exit;
   }
@@ -190,37 +176,10 @@ function handleDelete()
 {
   $id = $_POST['id'] ?? 0;
 
-  // Prevent deleting yourself
   if (empty($id) || $id == $_SESSION['user_id']) {
-    $_SESSION[Config::FLASH_ERROR] = 'Cannot delete yourself.';
+    $_SESSION[Config::FLASH_ERROR] = 'Cannot delete yourself or invalid ID.';
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_users');
     exit;
-  }
-
-  // Get user to delete
-  $userToDelete = User::getById($id);
-
-  // Check if user is an Admin
-  if ($userToDelete && $userToDelete->getLevel() === 'Admin') {
-    // Count how many admins exist
-    $allUsers = User::getAll();
-    $adminCount = 0;
-
-    foreach ($allUsers as $userData) {
-      // Handle both array and object formats
-      if (is_array($userData) && isset($userData['level']) && $userData['level'] === 'Admin') {
-        $adminCount++;
-      } elseif (is_object($userData) && $userData->getLevel() === 'Admin') {
-        $adminCount++;
-      }
-    }
-
-    // Prevent deleting the last admin
-    if ($adminCount <= 1) {
-      $_SESSION[Config::FLASH_ERROR] = 'Cannot delete the last admin.';
-      header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_users');
-      exit;
-    }
   }
 
   if (User::delete($id)) {

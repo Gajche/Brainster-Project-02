@@ -1,4 +1,5 @@
-// Main application entry point
+// js/main.js
+
 import { configureToastr } from "./ui.js";
 import {
   initAuth,
@@ -7,77 +8,78 @@ import {
   initComments,
 } from "./modules.js";
 import { handleAjaxFormSubmit } from "./api.js";
-import { validateForm } from "./validation.js";
-
-let formsBound = false;
+import { validateForm, validateField } from "./validation.js";
 
 // Page-specific module loader
 async function loadPageSpecificModules() {
   const page = document.body.dataset.page;
 
   switch (page) {
-    case "admin_users":
-      // Dynamically import admin_users.js module
+    case "admin_users": {
       const adminUsersModule = await import("./admin_users.js");
-      // If the module has an init function, call it
       if (adminUsersModule.init) adminUsersModule.init();
       break;
+    }
 
     case "dashboard":
-      // You could load dashboard-specific modules here
-      break;
-
     case "project_view":
-      // Project view specific modules
       break;
-
-    // Add other pages as needed
   }
 }
 
 $(function () {
-  // Configure Toastr ONCE with all settings
+  // Toastr
   if (typeof toastr !== "undefined") {
-    configureToastr(); // This now sets timeOut to 8000ms
+    configureToastr();
   }
 
-  // Initialize modules
+  // Init core modules
   [initAuth, initKanban, initTaskModals, initComments].forEach((init) =>
     init()
   );
 
-  // Load page-specific modules
   loadPageSpecificModules().catch(console.error);
 
-  // Bind forms ONCE
-  if (!formsBound) {
-    $(document).on("submit", "form.ajax-form", function (e) {
-      e.stopImmediatePropagation(); // STOP other handlers
+  // FORM SUBMIT (ALL FORMS)
+  $(document).on("submit", "form", function (e) {
+    if (!validateForm(this)) {
+      e.preventDefault();
+      $(this).find(".is-invalid").first().focus();
+      return false;
+    }
 
-      if (!validateForm(this)) {
-        e.preventDefault();
-        $(this).find(".is-invalid").first().focus();
-        return;
-      }
-
-      e.preventDefault(); // Prevent default AFTER validation
+    // AJAX forms only
+    if ($(this).hasClass("ajax-form")) {
+      e.preventDefault();
       handleAjaxFormSubmit(e);
-    });
+    }
+  });
 
-    formsBound = true;
-  }
+  // LIVE VALIDATION
 
-  // Global AJAX error
+  // Validate on blur
+  $(document).on("blur", "input, textarea, select", function () {
+    this.dataset.touched = "true";
+    validateField(this);
+  });
+
+  // Revalidate on input if touched
+  $(document).on("input", "input, textarea, select", function () {
+    if (this.dataset.touched === "true") {
+      validateField(this);
+    }
+  });
+
+  // GLOBAL AJAX ERROR
   $(document).ajaxError((e, jqXHR) => {
     if (typeof toastr === "undefined" || jqXHR.status === 0) return;
 
-    const errorMsg = (() => {
-      try {
-        return JSON.parse(jqXHR.responseText)?.message || "Server error";
-      } catch {
-        return "Request failed";
-      }
-    })();
+    let errorMsg = "Request failed";
+
+    try {
+      const json = JSON.parse(jqXHR.responseText);
+      errorMsg = json?.message || errorMsg;
+    } catch {}
 
     toastr.error(errorMsg);
   });

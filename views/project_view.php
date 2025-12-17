@@ -121,7 +121,7 @@ foreach ($tasks as $task) {
   <span class="badge <?= $statusInfo['badgeClass'] ?> ms-2"><?= $statusInfo['badge'] ?></span>
 </h2>
 
-<div class="card mb-4 <?= $statusInfo['cardClass'] ?>" style="border-width: 3px;">
+<div class="card mb-4 shadow <?= $statusInfo['cardClass'] ?>" style="border-width: 1px;">
   <div class="card-header <?= $statusInfo['headerClass'] ?>">
     <strong>Project Details</strong>
     <span class="float-end"><?= $statusInfo['icon'] ?> <?= $statusInfo['message'] ?></span>
@@ -186,7 +186,7 @@ foreach ($tasks as $task) {
 
 <?php if ($isTeamLead): ?>
   <!-- Add Member Form -->
-  <div class="card mb-4">
+  <div class="card mb-4 shadow">
     <div class="card-header">Add Team Member</div>
     <div class="card-body">
       <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/project_controller.php">
@@ -211,7 +211,7 @@ foreach ($tasks as $task) {
 
 <?php if (User::getById($userId)->canCreateTask($projectId)): ?>
   <!-- Create Task Form -->
-  <div class="card mb-4">
+  <div class="card mb-4 shadow">
     <div class="card-header">Create New Task</div>
     <div class="card-body">
       <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/task_controller.php">
@@ -223,7 +223,7 @@ foreach ($tasks as $task) {
         </div>
         <div class="mb-3">
           <label for="description" class="form-label">Description</label>
-          <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+          <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
         </div>
         <div class="mb-3">
           <label for="assignee_id" class="form-label">Assign To</label>

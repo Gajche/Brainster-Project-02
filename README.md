@@ -22,7 +22,7 @@ The system is divided into a regular application for users and an Admin panel fo
 - **Task Management**: Create, assign, update status (To Do, In Progress, QA, Done), edit, delete tasks; Kanban view with drag-and-drop; auto-comments on status changes.
 - **Comments**: Add, edit (marked as edited), delete comments on tasks; role-based restrictions.
 - **RBAC**: Permissions enforced per role (e.g., Seniors manage tasks in assigned projects; Mids/Juniors limited).
-- **UI Enhancements**: Bootstrap for responsive design; AJAX for forms/modals; toasts and loaders for feedback.
+- **UI Enhancements**: Bootstrap for responsive design; AJAX for forms/modals; toasts(toastr) and loaders(ajax) for feedback.
 
 ## Technology Stack
 
