@@ -60,6 +60,11 @@ class User
   // Admin create user (auto-approved, random pw)
   public static function adminCreate($name, $email, $password = null, $level, $is_team_lead = 0)
   {
+    // HARD SAFETY: only Seniors can be Team Leads
+    if ($level !== 'Senior') {
+      $is_team_lead = 0;
+    }
+
     $db = Database::getInstance();
     $randomPw = $password ?? bin2hex(random_bytes(8));  // Use provided password or generate random
     $hashed = password_hash($randomPw, PASSWORD_DEFAULT);
@@ -114,6 +119,21 @@ class User
   public static function update($id, $data)
   {
     $db = Database::getInstance();
+
+    // HARD SAFETY: only Seniors can be Team Leads
+    if (isset($data['level']) && $data['level'] !== 'Senior') {
+      $data['is_team_lead'] = 0;
+    }
+
+    // Extra safety: level not sent but checkbox is
+    if (!isset($data['level']) && isset($data['is_team_lead'])) {
+      $existing = self::getById($id);
+      if ($existing && $existing->getLevel() !== 'Senior') {
+        $data['is_team_lead'] = 0;
+      }
+    }
+
+
     $fields = [];
     $params = [];
     if (isset($data['name'])) {

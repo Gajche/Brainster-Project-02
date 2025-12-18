@@ -1,26 +1,15 @@
 <?php
 
-/**
- * Simple Autoloader for Project Management System
- * Place this file in your project root and require it once
- * 
- * Usage: require_once __DIR__ . '/autoload.php';
- */
-
-// ============================================================================
-// STEP 1: Load Config first (required by everything else)
-// ============================================================================
+// Load Config first (required by everything else)
 require_once __DIR__ . '/includes/config.php';
 
-// ============================================================================
-// STEP 2: Load helper functions (must load before controllers)
-// ============================================================================
+
+// Load helper functions (must load before controllers)
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/api.php';
 
-// ============================================================================
-// STEP 3: Auto-load all Model classes
-// ============================================================================
+
+//  Auto-load all Model classes
 spl_autoload_register(function ($className) {
   // Map of class names to their file paths
   $classMap = [
@@ -37,9 +26,8 @@ spl_autoload_register(function ($className) {
   }
 });
 
-// ============================================================================
+
 // OPTIONAL: Start session if not already started (convenience)
-// ============================================================================
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }

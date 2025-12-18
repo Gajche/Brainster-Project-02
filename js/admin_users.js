@@ -4,9 +4,9 @@ export function init() {
   function toggleTeamLead(selectEl) {
     const teamLeadId = selectEl.dataset.teamLeadId;
     const teamLeadCheckbox = document.getElementById(teamLeadId);
-    const container = teamLeadCheckbox
-      ? teamLeadCheckbox.closest(".form-check")
-      : null; // Get container for hiding
+    const container =
+      teamLeadCheckbox?.closest(".form-check") ||
+      document.getElementById("team-lead-container");
 
     if (teamLeadCheckbox && container) {
       if (selectEl.value !== "Senior") {

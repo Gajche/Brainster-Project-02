@@ -145,18 +145,32 @@ function handleUpdate()
   }
 
   // Team Lead can only be Senior
-  if ($data['is_team_lead']) {
-    $level = $data['level'] ?? '';
-    if (empty($level)) {
-      $user = User::getById($id);
-      $level = $user ? $user->getLevel() : '';
-    }
-    if ($level !== 'Senior') {
-      $_SESSION[Config::FLASH_ERROR] = 'Only Senior users can be Team Leads.';
-      header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_users');
-      exit;
-    }
+  // if ($data['is_team_lead']) {
+  //   $level = $data['level'] ?? '';
+  //   if (empty($level)) {
+  //     $user = User::getById($id);
+  //     $level = $user ? $user->getLevel() : '';
+  //   }
+  //   if ($level !== 'Senior') {
+  //     $_SESSION[Config::FLASH_ERROR] = 'Only Senior users can be Team Leads.';
+  //     header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_users');
+  //     exit;
+  //   }
+  // }
+
+  // Normalize Team Lead flag
+  $level = $data['level'] ?? null;
+
+  if (!$level) {
+    $existingUser = User::getById($id);
+    $level = $existingUser ? $existingUser->getLevel() : null;
   }
+
+  // FORCE rule: only Seniors can be Team Leads
+  if ($level !== 'Senior') {
+    $data['is_team_lead'] = 0;
+  }
+
 
   if (User::update($id, $data)) {
     $_SESSION[Config::FLASH_SUCCESS] = 'User updated successfully.';

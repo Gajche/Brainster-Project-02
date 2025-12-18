@@ -120,7 +120,7 @@ if (($_SESSION['user_level'] ?? '') === 'Senior' && ($_SESSION['is_team_lead'] ?
     <?php foreach ($projects as $project): ?>
       <?php $statusInfo = getProjectStatusInfo($project); ?>
       <div class="col-md-3 mb-4">
-        <div class="card h-100 <?= $statusInfo['class'] ?>" style="border-width: 3px;">
+        <div class="card h-100 <?= $statusInfo['class'] ?>" style="border-width: 1px;">
           <div class="card-body bg-lightgray shadow">
             <h5 class="card-title">
               <?= htmlspecialchars($project->getTitle()) ?>

@@ -1,5 +1,5 @@
 <?php
-// includes/api.php — FINAL, BULLETPROOF VERSION
+// includes/api.php 
 
 if (!function_exists('apiSuccess')) {
   function apiSuccess(mixed $data = null, string $message = 'Operation successful'): void

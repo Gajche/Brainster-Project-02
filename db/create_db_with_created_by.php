@@ -29,7 +29,13 @@ try {
             password VARCHAR(255) NOT NULL,
             level ENUM('Admin', 'Senior', 'Mid', 'Junior') NOT NULL,
             is_team_lead TINYINT(1) DEFAULT 0,
-            is_approved TINYINT(1) DEFAULT 0
+            is_approved TINYINT(1) DEFAULT 0,
+
+            CONSTRAINT chk_team_lead_senior_only
+            CHECK (
+                is_team_lead = 0
+                OR level = 'Senior'
+            )
         )
     ");
 

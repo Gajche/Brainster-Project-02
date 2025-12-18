@@ -76,7 +76,7 @@ export function validateField(field, form = field.form) {
   return true;
 }
 
-// helpers
+// Show validation error on field
 function showError(field, message) {
   field.classList.add("is-invalid");
 
@@ -89,7 +89,7 @@ function showError(field, message) {
 
   feedback.textContent = message;
 }
-
+// Clear validation error from field
 function clearError(field) {
   field.classList.remove("is-invalid");
 

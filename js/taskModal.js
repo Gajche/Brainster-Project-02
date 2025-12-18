@@ -1,6 +1,7 @@
-// taskModal.js - MINIMAL VERSION (remove ALL form binding)
-import { showToast } from "./ui.js";
+// taskModal.js 
 
+import { showToast } from "./ui.js";
+// Load modal content via AJAX
 export function loadModalContent(url, data, modalTitle, modalBody) {
   modalTitle.text("Loading...");
   modalBody.html(`
@@ -10,7 +11,7 @@ export function loadModalContent(url, data, modalTitle, modalBody) {
       </div>
     </div>
   `);
-
+// AJAX request to fetch content
   return $.get(url, data)
     .done(function (response) {
       if (response.success && response.data) {
@@ -31,6 +32,7 @@ export function loadModalContent(url, data, modalTitle, modalBody) {
     });
 }
 
+// Handlers for opening modals
 function handleViewTaskClick(e) {
   const taskId = $(e.currentTarget).data("task-id");
   const modalEl = document.getElementById("taskDetailsModal");
@@ -48,6 +50,7 @@ function handleViewTaskClick(e) {
   );
 }
 
+// Edit Task Modal
 function handleEditTaskClick(e) {
   const taskId = $(e.currentTarget).data("task-id");
   const modalEl = document.getElementById("editTaskModal");
@@ -65,6 +68,7 @@ function handleEditTaskClick(e) {
   );
 }
 
+// Initialize event listeners for task modals
 export function initTaskModals() {
   $(document).on("click", ".view-task-btn", handleViewTaskClick);
   $(document).on("click", ".edit-task-btn", handleEditTaskClick);
