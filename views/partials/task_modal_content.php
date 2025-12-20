@@ -54,7 +54,7 @@ $canUnassign = $canAssign && $currentAssignee;
 
 <?php if ($canChangeStatus): ?>
   <div class="mt-3">
-    <form class="ajax-form d-inline-block" data-reload="task-modal" data-task-id="<?= $task->getId() ?>" method="POST" action="<?= Config::getBaseUrl() ?>controllers/task_controller.php">
+    <form class="ajax-form d-inline-block" data-reload="true" data-task-id="<?= $task->getId() ?>" method="POST" action="<?= Config::getBaseUrl() ?>controllers/task_controller.php">
       <input type="hidden" name="action" value="change_status">
       <input type="hidden" name="task_id" value="<?= $task->getId() ?>">
       <label for="status-<?= $task->getId() ?>" class="form-label">Change Status</label>
@@ -97,10 +97,10 @@ $canUnassign = $canAssign && $currentAssignee;
       <?php endif; ?>
 
       <?php if ($canDeleteTask): ?>
-        <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/task_controller.php" class="d-inline" onsubmit="return confirm('Delete this task?')">
+        <form class="ajax-form d-inline" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>controllers/task_controller.php">
           <input type="hidden" name="action" value="delete">
           <input type="hidden" name="task_id" value="<?= $task->getId() ?>">
-          <button type="submit" class="btn btn-danger">Delete Task</button>
+          <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this task?');">Delete Task</button>
         </form>
       <?php endif; ?>
     </div>
@@ -139,10 +139,10 @@ $canUnassign = $canAssign && $currentAssignee;
           <?php if ($comment['user_id'] == $userId || isAdmin()): ?>
             <div class="d-flex justify-content-end mt-2">
               <button class="btn btn-sm btn-outline-warning me-2 edit-comment-btn" data-comment-id="<?= $comment['id'] ?>">Edit</button>
-              <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/task_controller.php" class="d-inline" onsubmit="return confirm('Delete comment?');">
+              <form class="ajax-form d-inline" data-reload="true" data-task-id="<?= $task->getId() ?>" method="POST" action="<?= Config::getBaseUrl() ?>controllers/task_controller.php">
                 <input type="hidden" name="action" value="delete_comment">
                 <input type="hidden" name="comment_id" value="<?= $comment['id'] ?>">
-                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete comment?');">Delete</button>
               </form>
             </div>
           <?php endif; ?>

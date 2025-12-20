@@ -170,11 +170,11 @@ foreach ($tasks as $task) {
         <?php if ($isTeamLead): ?>
           <td>
             <?php if ($member['id'] != $project->getTeamLeadId()): ?>
-              <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/project_controller.php" class="d-inline">
+              <form class="ajax-form d-inline" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>controllers/project_controller.php">
                 <input type="hidden" name="action" value="remove_member">
                 <input type="hidden" name="project_id" value="<?= $projectId ?>">
                 <input type="hidden" name="member_id" value="<?= $member['id'] ?>">
-                <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Remove this member?');">Remove</button>
               </form>
             <?php endif; ?>
           </td>
@@ -189,7 +189,7 @@ foreach ($tasks as $task) {
   <div class="card mb-4 shadow">
     <div class="card-header">Add Team Member</div>
     <div class="card-body">
-      <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/project_controller.php">
+      <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>controllers/project_controller.php">
         <input type="hidden" name="action" value="add_member">
         <input type="hidden" name="project_id" value="<?= $projectId ?>">
         <div class="mb-3">
@@ -214,7 +214,7 @@ foreach ($tasks as $task) {
   <div class="card mb-4 shadow">
     <div class="card-header">Create New Task</div>
     <div class="card-body">
-      <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/task_controller.php">
+      <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>controllers/task_controller.php">
         <input type="hidden" name="action" value="create">
         <input type="hidden" name="project_id" value="<?= $projectId ?>">
         <div class="mb-3">

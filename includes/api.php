@@ -41,7 +41,7 @@ if (!function_exists('apiError')) {
       exit;
     }
 
-    // NON-AJAX FALLBACK — FIXED THIS LINE
+    // NON-AJAX FALLBACK 
     if (session_status() === PHP_SESSION_ACTIVE) {
       $_SESSION[Config::FLASH_ERROR] = $message;
     }

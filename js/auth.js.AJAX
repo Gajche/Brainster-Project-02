@@ -19,7 +19,7 @@ function handleLogin(e) {
     data: form.serialize(),
     dataType: "json",
     success: function (response) {
-      // THIS IS THE NEW STANDARD — check response.success
+      // THIS IS THE NEW STANDARD - check response.success
       if (response.success === true) {
         showToast("success", response.message || "Login successful!");
 

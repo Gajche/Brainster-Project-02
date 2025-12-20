@@ -11,7 +11,7 @@ try {
   $pdo = new PDO("mysql:host=$host", $user, $pass);
   $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-  // Drop DB if exists, then create
+  // Drop DB if exists, then create (VERY Risky for production, convenient for testing)
   $pdo->exec("DROP DATABASE IF EXISTS $dbname");
   $pdo->exec("CREATE DATABASE $dbname");
   echo "Database created successfully.<br>";

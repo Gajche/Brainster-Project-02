@@ -1,11 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../autoload.php';
-// require_once __DIR__ . '/../includes/config.php';
-// require_once __DIR__ . '/../includes/api.php';
-// require_once Config::ROOT_DIR . '/models/Database.php';
-// require_once Config::ROOT_DIR . '/models/User.php';
-// require_once Config::ROOT_DIR . '/models/Project.php';
 
 // Start session if not already
 if (session_status() === PHP_SESSION_NONE) {
@@ -26,29 +21,17 @@ $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
 switch ($action) {
   case 'create':
-    if ($userLevel !== 'Admin') {
-      $_SESSION[Config::FLASH_ERROR] = 'Access denied.';
-      header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_projects');
-      exit;
-    }
+    requireAdmin();
     handleCreate();
     break;
 
   case 'update':
-    if ($userLevel !== 'Admin') {
-      $_SESSION[Config::FLASH_ERROR] = 'Access denied.';
-      header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_projects');
-      exit;
-    }
+    requireAdmin();
     handleUpdate();
     break;
 
   case 'delete':
-    if ($userLevel !== 'Admin') {
-      $_SESSION[Config::FLASH_ERROR] = 'Access denied.';
-      header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_projects');
-      exit;
-    }
+    requireAdmin();
     handleDelete();
     break;
 
@@ -69,9 +52,46 @@ switch ($action) {
     exit;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Require admin access or redirect
+ */
+function requireAdmin()
+{
+  if ($_SESSION['user_level'] !== 'Admin') {
+    $_SESSION[Config::FLASH_ERROR] = 'Access denied.';
+    header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_projects');
+    exit;
+  }
+}
+
+/**
+ * Redirect to a specific page
+ */
+function redirectToPage($page)
+{
+  header('Location: ' . Config::getBaseUrl() . 'index.php?page=' . $page);
+  exit;
+}
+
+/**
+ * Redirect to project view
+ */
+function redirectToProject($projectId)
+{
+  header('Location: ' . Config::getBaseUrl() . 'index.php?page=project_view&id=' . $projectId);
+  exit;
+}
+
+
+// ============================================================================
 // ADMIN PROJECT ACTIONS (Admin only)
-// ─────────────────────────────────────────────────────────────────────────────
+// ============================================================================
+
 function handleCreate()
 {
   $data = [
@@ -83,34 +103,41 @@ function handleCreate()
     'team_lead_id'    => $_POST['team_lead_id'] ?? 0
   ];
 
+  // Validation
   if (empty($data['title']) || empty($data['team_lead_id'])) {
     $_SESSION[Config::FLASH_ERROR] = 'Title and Team Lead required.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_projects');
-    exit;
+    redirectToPage('admin_projects');
   }
 
+  // Validate Team Lead
   $lead = User::getById($data['team_lead_id']);
   if (!$lead || $lead->getLevel() !== 'Senior' || !$lead->isTeamLead()) {
     $_SESSION[Config::FLASH_ERROR] = 'Invalid Team Lead.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_projects');
-    exit;
+    redirectToPage('admin_projects');
   }
 
+  // Create project
   $projectId = Project::create($data);
+
   if ($projectId) {
     $_SESSION[Config::FLASH_SUCCESS] = 'Project created successfully.';
   } else {
     $_SESSION[Config::FLASH_ERROR] = 'Project creation failed.';
   }
-  header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_projects');
-  exit;
+
+  redirectToPage('admin_projects');
 }
 
 function handleUpdate()
 {
   $id = $_POST['id'] ?? 0;
-  $data = [];
 
+  if (empty($id)) {
+    $_SESSION[Config::FLASH_ERROR] = 'Invalid project ID.';
+    redirectToPage('admin_projects');
+  }
+
+  $data = [];
   if (isset($_POST['title']))           $data['title']           = trim($_POST['title']);
   if (isset($_POST['description']))     $data['description']     = $_POST['description'];
   if (isset($_POST['requirements']))    $data['requirements']    = $_POST['requirements'];
@@ -118,19 +145,13 @@ function handleUpdate()
   if (isset($_POST['deadline']))        $data['deadline']        = $_POST['deadline'];
   if (isset($_POST['team_lead_id']))    $data['team_lead_id']    = $_POST['team_lead_id'];
 
-  if (empty($id)) {
-    $_SESSION[Config::FLASH_ERROR] = 'Invalid project ID.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_projects');
-    exit;
-  }
-
   if (Project::update($id, $data)) {
     $_SESSION[Config::FLASH_SUCCESS] = 'Project updated successfully.';
   } else {
     $_SESSION[Config::FLASH_ERROR] = 'Project update failed.';
   }
-  header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_projects');
-  exit;
+
+  redirectToPage('admin_projects');
 }
 
 function handleDelete()
@@ -139,8 +160,7 @@ function handleDelete()
 
   if (empty($id)) {
     $_SESSION[Config::FLASH_ERROR] = 'Invalid project ID.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_projects');
-    exit;
+    redirectToPage('admin_projects');
   }
 
   if (Project::delete($id)) {
@@ -148,38 +168,57 @@ function handleDelete()
   } else {
     $_SESSION[Config::FLASH_ERROR] = 'Failed to delete project.';
   }
-  header('Location: ' . Config::getBaseUrl() . 'index.php?page=admin_projects');
-  exit;
+
+  redirectToPage('admin_projects');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
+// ============================================================================
 // PROJECT TEAM MANAGEMENT (Team Lead or Admin)
-// ─────────────────────────────────────────────────────────────────────────────
+// ============================================================================
+
 function handleAddMember($userId)
 {
   $projectId = $_POST['project_id'] ?? 0;
   $memberId  = $_POST['member_id'] ?? 0;
 
+  // Validation
   if (empty($projectId) || empty($memberId)) {
-    $_SESSION[Config::FLASH_ERROR] = 'Invalid data.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=project_view&id=' . $projectId);
-    exit;
+    if (isAjax()) {
+      handleResponse(false, 'Invalid data.', null, 400);
+    } else {
+      $_SESSION[Config::FLASH_ERROR] = 'Invalid data.';
+      redirectToProject($projectId);
+    }
   }
 
+  // Permission check
   $project = Project::getById($projectId);
   if (!$project || !$project->canManageTeam($userId)) {
-    $_SESSION[Config::FLASH_ERROR] = 'Access denied.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=project_view&id=' . $projectId);
-    exit;
+    if (isAjax()) {
+      handleResponse(false, 'Access denied.', null, 403);
+    } else {
+      $_SESSION[Config::FLASH_ERROR] = 'Access denied.';
+      redirectToProject($projectId);
+    }
   }
 
+  // Add member
   if (Project::addMember($projectId, $memberId)) {
-    $_SESSION[Config::FLASH_SUCCESS] = 'Member added successfully.';
+    if (isAjax()) {
+      handleResponse(true, 'Member added successfully.');
+    } else {
+      $_SESSION[Config::FLASH_SUCCESS] = 'Member added successfully.';
+      redirectToProject($projectId);
+    }
   } else {
-    $_SESSION[Config::FLASH_ERROR] = 'Failed to add member.';
+    if (isAjax()) {
+      handleResponse(false, 'Failed to add member.', null, 500);
+    } else {
+      $_SESSION[Config::FLASH_ERROR] = 'Failed to add member.';
+      redirectToProject($projectId);
+    }
   }
-  header('Location: ' . Config::getBaseUrl() . 'index.php?page=project_view&id=' . $projectId);
-  exit;
 }
 
 function handleRemoveMember($userId)
@@ -187,26 +226,43 @@ function handleRemoveMember($userId)
   $projectId = $_POST['project_id'] ?? 0;
   $memberId  = $_POST['member_id'] ?? 0;
 
+  // Validation
   if (empty($projectId) || empty($memberId)) {
-    $_SESSION[Config::FLASH_ERROR] = 'Invalid data.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=project_view&id=' . $projectId);
-    exit;
+    if (isAjax()) {
+      handleResponse(false, 'Invalid data.', null, 400);
+    } else {
+      $_SESSION[Config::FLASH_ERROR] = 'Invalid data.';
+      redirectToProject($projectId);
+    }
   }
 
+  // Permission check
   $project = Project::getById($projectId);
   if (!$project || !$project->canManageTeam($userId)) {
-    $_SESSION[Config::FLASH_ERROR] = 'Access denied.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=project_view&id=' . $projectId);
-    exit;
+    if (isAjax()) {
+      handleResponse(false, 'Access denied.', null, 403);
+    } else {
+      $_SESSION[Config::FLASH_ERROR] = 'Access denied.';
+      redirectToProject($projectId);
+    }
   }
 
+  // Remove member
   if (Project::removeMember($projectId, $memberId)) {
-    $_SESSION[Config::FLASH_SUCCESS] = 'Member removed successfully.';
+    if (isAjax()) {
+      handleResponse(true, 'Member removed successfully.');
+    } else {
+      $_SESSION[Config::FLASH_SUCCESS] = 'Member removed successfully.';
+      redirectToProject($projectId);
+    }
   } else {
-    $_SESSION[Config::FLASH_ERROR] = 'Failed to remove member.';
+    if (isAjax()) {
+      handleResponse(false, 'Failed to remove member.', null, 500);
+    } else {
+      $_SESSION[Config::FLASH_ERROR] = 'Failed to remove member.';
+      redirectToProject($projectId);
+    }
   }
-  header('Location: ' . Config::getBaseUrl() . 'index.php?page=project_view&id=' . $projectId);
-  exit;
 }
 
 function handleMarkDone($userId)
@@ -215,15 +271,13 @@ function handleMarkDone($userId)
 
   if (empty($id)) {
     $_SESSION[Config::FLASH_ERROR] = 'Invalid project ID.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=project_view&id=' . $id);
-    exit;
+    redirectToProject($id);
   }
 
   $project = Project::getById($id);
   if (!$project || !$project->canManageTeam($userId)) {
     $_SESSION[Config::FLASH_ERROR] = 'Access denied.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=project_view&id=' . $id);
-    exit;
+    redirectToProject($id);
   }
 
   if (Project::markDone($id)) {
@@ -231,6 +285,6 @@ function handleMarkDone($userId)
   } else {
     $_SESSION[Config::FLASH_ERROR] = 'Cannot mark Done: Not all tasks are complete.';
   }
-  header('Location: ' . Config::getBaseUrl() . 'index.php?page=project_view&id=' . $id);
-  exit;
+
+  redirectToProject($id);
 }

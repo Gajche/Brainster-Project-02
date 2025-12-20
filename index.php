@@ -1,10 +1,5 @@
 <?php
 
-// ------------------------------------------------------------------
-// Entry point & router
-// ------------------------------------------------------------------
-
-// 🎯 ONE LINE REPLACES ALL THE REQUIRE_ONCE STATEMENTS!
 require_once __DIR__ . '/autoload.php';
 
 // Determine which page to show

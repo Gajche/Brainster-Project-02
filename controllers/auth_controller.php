@@ -33,9 +33,8 @@ switch ($action) {
     exit;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // REGISTER
-// ─────────────────────────────────────────────────────────────────────────────
 function handleRegister()
 {
   $name           = trim($_POST['name'] ?? '');
@@ -57,7 +56,7 @@ function handleRegister()
     exit;
   }
 
-  // New: Enhanced email regex validation (more strict than filter_var)
+  // Enhanced email regex validation (more strict than filter_var)
   if (!preg_match('/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $email)) {
     $_SESSION[Config::FLASH_ERROR] = 'Invalid email format.';
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=register');
@@ -96,9 +95,8 @@ function handleRegister()
   exit;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // LOGIN (supports both normal and AJAX login)
-// ─────────────────────────────────────────────────────────────────────────────
 function handleLogin()
 {
   $login    = trim($_POST['login'] ?? '');
@@ -124,7 +122,7 @@ function handleLogin()
   }
 
   if (password_verify($password, $user->getPassword())) {
-    // Successful login — set session
+    // Successful login - set session
     $_SESSION['user_id']       = $user->getId();
     $_SESSION['user_name']     = $user->getName();
     $_SESSION['user_email']    = $user->getEmail();
@@ -152,9 +150,8 @@ function handleLogin()
   $is_ajax ? null : exit;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // LOGOUT
-// ─────────────────────────────────────────────────────────────────────────────
 function handleLogout()
 {
   session_destroy();
@@ -162,9 +159,43 @@ function handleLogout()
   exit;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // CHANGE PASSWORD
-// ─────────────────────────────────────────────────────────────────────────────
+// function handleChangePassword()
+// {
+//   if (!isset($_SESSION['user_id'])) {
+//     header('Location: ' . Config::getBaseUrl() . 'index.php?page=login');
+//     exit;
+//   }
+
+//   $oldPw        = $_POST['old_password'] ?? '';
+//   $newPw        = $_POST['new_password'] ?? '';
+//   $repeatNewPw  = $_POST['repeat_new_password'] ?? '';
+
+//   if (empty($oldPw) || empty($newPw) || empty($repeatNewPw)) {
+//     $_SESSION[Config::FLASH_ERROR] = 'All fields are required.';
+//     header('Location: ' . Config::getBaseUrl() . 'index.php?page=change_password');
+//     exit;
+//   }
+
+//   if ($newPw !== $repeatNewPw) {
+//     $_SESSION[Config::FLASH_ERROR] = 'New passwords do not match.';
+//     header('Location: ' . Config::getBaseUrl() . 'index.php?page=change_password');
+//     exit;
+//   }
+
+//   $user = User::getById($_SESSION['user_id']);
+
+//   if ($user->changePassword($oldPw, $newPw)) {
+//     $_SESSION[Config::FLASH_SUCCESS] = 'Password changed successfully!';
+//     header('Location: ' . Config::getBaseUrl() . 'index.php?page=dashboard');
+//   } else {
+//     $_SESSION[Config::FLASH_ERROR] = 'Old password incorrect.';
+//     header('Location: ' . Config::getBaseUrl() . 'index.php?page=change_password');
+//   }
+//   exit;
+// }
+
 function handleChangePassword()
 {
   if (!isset($_SESSION['user_id'])) {
@@ -175,27 +206,49 @@ function handleChangePassword()
   $oldPw        = $_POST['old_password'] ?? '';
   $newPw        = $_POST['new_password'] ?? '';
   $repeatNewPw  = $_POST['repeat_new_password'] ?? '';
+  $is_ajax      = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
   if (empty($oldPw) || empty($newPw) || empty($repeatNewPw)) {
-    $_SESSION[Config::FLASH_ERROR] = 'All fields are required.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=change_password');
-    exit;
+    $_SESSION[Config::FLASH_ERROR] = 'All fields are required.'; // Always set
+
+    if ($is_ajax) {
+      apiError('bad_request', 'All fields are required.', 400);
+    } else {
+      header('Location: ' . Config::getBaseUrl() . 'index.php?page=change_password');
+      exit;
+    }
   }
 
   if ($newPw !== $repeatNewPw) {
-    $_SESSION[Config::FLASH_ERROR] = 'New passwords do not match.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=change_password');
-    exit;
+    $_SESSION[Config::FLASH_ERROR] = 'New passwords do not match.'; // Always set
+
+    if ($is_ajax) {
+      apiError('bad_request', 'New passwords do not match.', 400);
+    } else {
+      header('Location: ' . Config::getBaseUrl() . 'index.php?page=change_password');
+      exit;
+    }
   }
 
   $user = User::getById($_SESSION['user_id']);
 
   if ($user->changePassword($oldPw, $newPw)) {
-    $_SESSION[Config::FLASH_SUCCESS] = 'Password changed successfully!';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=dashboard');
+    $_SESSION[Config::FLASH_SUCCESS] = 'Password changed successfully!'; // Always set
+
+    if ($is_ajax) {
+      apiSuccess(null, 'Password changed successfully!');
+    } else {
+      header('Location: ' . Config::getBaseUrl() . 'index.php?page=dashboard');
+      exit;
+    }
   } else {
-    $_SESSION[Config::FLASH_ERROR] = 'Old password incorrect.';
-    header('Location: ' . Config::getBaseUrl() . 'index.php?page=change_password');
+    $_SESSION[Config::FLASH_ERROR] = 'Old password incorrect.'; // Always set
+
+    if ($is_ajax) {
+      apiError('unauthorized', 'Old password incorrect.', 401);
+    } else {
+      header('Location: ' . Config::getBaseUrl() . 'index.php?page=change_password');
+      exit;
+    }
   }
-  exit;
 }

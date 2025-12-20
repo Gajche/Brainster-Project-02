@@ -1,5 +1,21 @@
 <?php
 
+
+// SESSION SECURITY HARDENING SETTINGS
+// Prevent JS access to session cookie
+ini_set('session.cookie_httponly', 1);
+
+// Only send cookies over HTTPS (safe fallback for localhost)
+ini_set(
+  'session.cookie_secure',
+  !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'
+);
+
+// Prevent session fixation
+ini_set('session.use_strict_mode', 1);
+
+
+// Config class
 class Config
 {
   const DB_HOST = 'localhost';
@@ -25,7 +41,7 @@ class Config
     // Generically remove /controllers/anyfile.php from the path
     $basePath = preg_replace('/\/controllers\/[^\/]*$/', '', $script_name);
 
-    // If the regex didn't match (i.e., we are not in a controller), just get the dirname
+    // If the regex didn't match (we are not in a controller), just get the dirname
     if ($basePath === $script_name) {
       $basePath = dirname($script_name);
     }

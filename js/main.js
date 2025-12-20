@@ -29,6 +29,20 @@ async function loadPageSpecificModules() {
 
 $(function () {
   // Toastr
+  // if (typeof toastr !== "undefined") {
+  //   configureToastr();
+  // }
+
+  // Smooth scroll to top if there's a flash message (after page loads)
+  if (
+    $(".alert-success, .alert-danger, .alert-warning, .alert-info").length > 0
+  ) {
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 100); // Small delay to ensure page is fully loaded
+  }
+
+  // Toastr
   if (typeof toastr !== "undefined") {
     configureToastr();
   }

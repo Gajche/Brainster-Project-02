@@ -1,4 +1,4 @@
-// comment.js - MINIMAL VERSION
+// comment.js 
 import { showToast } from "./ui.js";
 import { escapeHtml } from "./utils.js";
 import { loadModalContent } from "./taskModal.js";

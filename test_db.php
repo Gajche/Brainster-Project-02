@@ -1,6 +1,6 @@
 <?php
 
-// Use absolute paths with ROOT_DIR for portability
+// test_db.php
 require_once __DIR__ . '/includes/config.php';  // Config first
 require_once Config::ROOT_DIR . '/models/Database.php';
 

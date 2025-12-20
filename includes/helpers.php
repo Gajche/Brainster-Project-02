@@ -11,3 +11,47 @@ function isAdmin()
 {
   return isset($_SESSION['user_level']) && $_SESSION['user_level'] === 'Admin';
 }
+
+/**
+ * Detect if the current request is AJAX
+ */
+function isAjax()
+{
+  return !empty($_SERVER['HTTP_X_REQUESTED_WITH'])
+    && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+}
+
+/**
+ * Handle response for both AJAX and traditional requests
+ * Automatically sets session flash and returns appropriate response
+ */
+function handleResponse($success, $message, $data = null, $httpCode = 200)
+{
+  // Always set session flash for Bootstrap alerts after page reload
+  if ($success) {
+    $_SESSION[Config::FLASH_SUCCESS] = $message;
+  } else {
+    $_SESSION[Config::FLASH_ERROR] = $message;
+  }
+
+  // Return AJAX response or redirect
+  if (isAjax()) {
+    if ($success) {
+      apiSuccess($data, $message);
+    } else {
+      apiError('error', $message, $httpCode);
+    }
+  } else {
+    redirectBack();
+  }
+}
+
+/**
+ * Redirect back to the previous page
+ */
+function redirectBack()
+{
+  $referer = $_SERVER['HTTP_REFERER'] ?? Config::getBaseUrl() . 'index.php?page=dashboard';
+  header('Location: ' . $referer);
+  exit;
+}

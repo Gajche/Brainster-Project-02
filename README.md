@@ -62,8 +62,14 @@ The system is divided into a regular application for users and an Admin panel fo
 4. Default Credentials:
 
 - Admin: admin@example.com / admin123
-- Team Lead: lead@example.com / lead123
+- Team Lead: lead1@example.com / lead123
+- Team Lead: lead2@example.com / lead456
+- Regular Senior 1: senior1@example.com / senior123
+- Regular Senior 2: senior2@example.com / senior456
+- Mid Developer 1: mid1@example.com / mid123
+- Junior Developer 1: junior1@example.com / junior123
 - Register new users for testing (approve via Admin panel).
+- Create new users via admin panel.
 
 ## Usage
 

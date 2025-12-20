@@ -2,7 +2,7 @@ import { showToast } from "./ui.js";
 
 function handleLogin(e) {
   e.preventDefault();
-  e.stopImmediatePropagation(); // CRITICAL: Prevent duplicate handlers
+  e.stopImmediatePropagation(); //  Prevent duplicate handlers
 
   const form = $(e.currentTarget);
   const errorDiv = $("#login-error");

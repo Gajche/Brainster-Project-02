@@ -11,7 +11,7 @@ if (!isLoggedIn()) {
     <div class="card">
       <h5 class="card-header bg-warning">Change Password</h5>
       <div class="card-body shadow">
-        <form method="POST" action="<?= Config::getBaseUrl() ?>controllers/auth_controller.php">
+        <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>controllers/auth_controller.php">
           <input type="hidden" name="action" value="change_password">
           <div class="mb-3">
             <label for="old_password" class="form-label">Old Password</label>

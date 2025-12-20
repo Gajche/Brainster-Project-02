@@ -1,6 +1,6 @@
 <?php
 
-// 🎯 ONLY ONE LINE NEEDED - autoload handles the rest!
+
 require_once __DIR__ . '/../autoload.php';
 
 class Task
@@ -12,7 +12,7 @@ class Task
   private $created_at;
   private $status;
   private $assigned_to;
-  private $created_by;  // New property for creator ID
+  private $created_by;
 
   public function __construct($data)
   {
@@ -23,7 +23,7 @@ class Task
     $this->created_at = $data['created_at'] ?? null;
     $this->status = $data['status'] ?? 'To Do';
     $this->assigned_to = $data['assigned_to'] ?? null;
-    $this->created_by = $data['created_by'] ?? null;  // New in constructor
+    $this->created_by = $data['created_by'] ?? null;
   }
 
   // Get task by ID
