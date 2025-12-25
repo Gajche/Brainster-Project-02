@@ -1,23 +1,23 @@
 <?php
 
-// Load Config first (required by everything else)
-require_once __DIR__ . '/includes/config.php';
+// Load classes first
+require_once __DIR__ . '/backend/includes/classes/Config.php';
+require_once __DIR__ . '/backend/includes/classes/Validator.php';
+require_once __DIR__ . '/backend/includes/classes/Exceptions.php';
 
+// Load helper functions
+require_once __DIR__ . '/backend/includes/helpers.php';
+require_once __DIR__ . '/backend/includes/api.php';
 
-// Load helper functions (must load before controllers)
-require_once __DIR__ . '/includes/helpers.php';
-require_once __DIR__ . '/includes/api.php';
-
-
-//  Auto-load all Model classes
+// Auto-load all Model classes
 spl_autoload_register(function ($className) {
   // Map of class names to their file paths
   $classMap = [
-    'Database' => __DIR__ . '/models/Database.php',
-    'User'     => __DIR__ . '/models/User.php',
-    'Project'  => __DIR__ . '/models/Project.php',
-    'Task'     => __DIR__ . '/models/Task.php',
-    'Comment'  => __DIR__ . '/models/Comment.php',
+    'Database' => __DIR__ . '/backend/models/Database.php',
+    'User'     => __DIR__ . '/backend/models/User.php',
+    'Project'  => __DIR__ . '/backend/models/Project.php',
+    'Task'     => __DIR__ . '/backend/models/Task.php',
+    'Comment'  => __DIR__ . '/backend/models/Comment.php',
   ];
 
   // If the class exists in our map, require it
@@ -26,8 +26,7 @@ spl_autoload_register(function ($className) {
   }
 });
 
-
-// OPTIONAL: Start session if not already started (convenience)
+// Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }

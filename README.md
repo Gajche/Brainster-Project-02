@@ -1,12 +1,20 @@
 # Project Management Application
 
-[![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
-[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
-[![jQuery](https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white)](https://jquery.com/)
-[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
-[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
+<div align="center">
+
+[![PHP](https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white)](https://www.php.net/)
+[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=flat-square&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
+[![jQuery](https://img.shields.io/badge/jQuery-0769AD?style=flat-square&logo=jquery&logoColor=white)](https://jquery.com/)
+[![AJAX](https://img.shields.io/badge/AJAX-007ACC?style=flat-square&logoColor=white)](https://api.jquery.com/jquery.ajax/)
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
+[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
+[![Toastr](https://img.shields.io/badge/Toastr-FF9800?style=flat-square&logoColor=white)](https://codeseven.github.io/toastr/)
+[![JSDoc](https://img.shields.io/badge/JSDoc-3B82F6?style=flat-square&logoColor=white)](https://jsdoc.app/)
+[![PHPDoc](https://img.shields.io/badge/PHPDoc-8892BF?style=flat-square&logoColor=white)](https://phpdoc.org/)
+
+</div>
 
 ## Project Description
 
@@ -28,8 +36,20 @@ The system is divided into a regular application for users and an Admin panel fo
 
 - **Backend**: PHP (OOP) for server logic, controllers, and models.
 - **Database**: MySQL for data storage (users, projects, tasks, comments).
-- **Frontend**: HTML/CSS with Bootstrap for styling; JavaScript/jQuery for interactivity (AJAX, drag-drop via Sortable.js).
+- **Frontend**: HTML/CSS with Bootstrap for styling; JavaScript/jQuery/toastr for interactivity (AJAX, drag-drop via Sortable.js, toastr for notifications).
 - **Security**: Prepared statements for SQL; password hashing; session-based auth.
+
+## Technologies Used
+
+- **PHP** - Backend scripting and server-side logic
+- **MySQL** - Relational database for data storage
+- **JavaScript** - Client-side interactivity and dynamic features
+- **Bootstrap** - Responsive front-end framework for fast UI development
+- **jQuery** - Simplified DOM manipulation and AJAX handling
+- **HTML5** - Semantic structure and modern web standards
+- **CSS3** - Styling, animations, and responsive design
+- **Toastr** - Elegant, non-blocking toast notifications
+- **JSDoc** - Inline documentation generation for JavaScript code
 
 ## Installation and Setup
 
@@ -44,15 +64,15 @@ The system is divided into a regular application for users and an Admin panel fo
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://git.brainster.co/your-username/brainster-project-02.git
-   cd brainster-project-02
+   git clone https://git.brainster.co/Dejan.Nikolovski-FS21/Brainster-Project-2-PMA.git
+   cd <name of the folder>
 
    ```
 
 2. Database Configuration:
 
-- Edit includes/config.php with your MySQL credentials (DB_HOST, DB_NAME, etc.).
-- Run db/create_db.php in a browser or via PHP CLI to create the database, tables, and seed sample data.
+- Edit backend/includes/config.php with your MySQL credentials (DB_HOST, DB_NAME, etc.).
+- Run database/create_db.php in a browser or via PHP CLI to create the database, tables, and seed sample data.
 
 3. Run the Application:
 
@@ -61,13 +81,16 @@ The system is divided into a regular application for users and an Admin panel fo
 
 4. Default Credentials:
 
-- Admin: admin@example.com / admin123
-- Team Lead: lead1@example.com / lead123
-- Team Lead: lead2@example.com / lead456
+```
+- Admin User: admin@example.com / admin123
+- Team Lead Senior 1: lead1@example.com / lead123
+- Team Lead Senior 2: lead2@example.com / lead456
 - Regular Senior 1: senior1@example.com / senior123
 - Regular Senior 2: senior2@example.com / senior456
 - Mid Developer 1: mid1@example.com / mid123
 - Junior Developer 1: junior1@example.com / junior123
+```
+
 - Register new users for testing (approve via Admin panel).
 - Create new users via admin panel.
 
@@ -80,7 +103,9 @@ The system is divided into a regular application for users and an Admin panel fo
 
 ### ER Diagram
 
-- (Created with draw.io; illustrates entity relationships for users, projects, tasks, and comments.)
+- The following diagram illustrates the entity relationships between users, projects, tasks, and comments.
+
+![ER Diagram](docs/er-diagram.svg)
 
 ### Development Notes
 
@@ -91,68 +116,93 @@ The system is divided into a regular application for users and an Admin panel fo
 ### Project Structure
 
 ```
-.
-├── controllers
-│   ├── auth_controller.php
-│   ├── project_controller.php
-│   ├── task_controller.php
-│   ├── user_controller.php
-├── css
-│   ├── bootstrap.min.css
-│   ├── custom.css
-│   └── kanban.css
-├── db
-│   ├── create_db_more_samples.php
-│   └── create_db.php
-├── includes
-│   ├── api.php
-│   ├── config.php
-│   ├── footer.php
-│   ├── header.php
-│   └── helpers.php
-├── js
-│   ├── api.js
-│   ├── auth.js
-│   ├── bootstrap.bundle.min.js
-│   ├── comment.js
-│   ├── jquery.min.js
-│   ├── kanban.js
-│   ├── main.js
-│   ├── Sortable.min.js
-│   ├── taskModal.js
-│   ├── ui.js
-│   ├── utils.js
-│   └── validation.js
-├── models
-│   ├── Comment.php
-│   ├── Database.php
-│   ├── Project.php
-│   ├── Task.php
-│   └── User.php
-├── views
-│   ├── partials
-│   │   └── task_modal_content.php
-│   ├── admin_panel.php
-│   ├── admin_projects.php
-│   ├── admin_users.php
-│   ├── change_password.php
-│   ├── dashboard.php
-│   ├── login.php
-│   ├── project_view.php
-│   ├── register.php
-│   └── task_view.php
+ProjectRootFolder/
+├── backend
+│   ├── controllers
+│   │   ├── auth_controller.php
+│   │   ├── auth_controller.php.bak
+│   │   ├── project_controller.php
+│   │   ├── task_controller.php
+│   │   └── user_controller.php
+│   ├── includes
+│   │   ├── classes
+│   │   │   ├── Config.php
+│   │   │   ├── Exceptions.php
+│   │   │   └── Validator.php
+│   │   ├── api.php
+│   │   └── helpers.php
+│   ├── models
+│   │   ├── Comment.php
+│   │   ├── Database.php
+│   │   ├── Database.php.bak
+│   │   ├── Project.php
+│   │   ├── Task.php
+│   │   └── User.php
+│   └── views
+│       ├── partials
+│       │   ├── footer.php
+│       │   ├── header.php
+│       │   └── task_modal_content.php
+│       ├── admin_panel.php
+│       ├── admin_projects.php
+│       ├── admin_users.php
+│       ├── change_password.php
+│       ├── dashboard.php
+│       ├── login.php
+│       ├── project_view.php
+│       ├── register.php
+│       └── task_view.php
+├── database
+│   └── create_db_with_created_by.php
+├── docs
+│   ├── er-diagram.drawio
+│   ├── er-diagram.png
+│   └── er-diagram.svg
+├── frontend
+│   ├── css
+│   │   ├── custom.css
+│   │   └── kanban.css
+│   ├── js
+│   │   ├── admin_users.js
+│   │   ├── api.js
+│   │   ├── auth.js
+│   │   ├── comment.js
+│   │   ├── kanban.js
+│   │   ├── main.js
+│   │   ├── modules.js
+│   │   ├── taskModal.js
+│   │   ├── ui.js
+│   │   ├── utils.js
+│   │   └── validation.js
+│   └── vendor
+│       ├── css
+│       │   ├── bootstrap.min.css
+│       │   ├── bootstrap.min.css.map
+│       │   └── toastr.min.css
+│       └── js
+│           ├── bootstrap.bundle.min.js
+│           ├── bootstrap.bundle.min.js.map
+│           ├── bootstrap.min.js.map
+│           ├── jquery.min.js
+│           ├── Sortable.min.js
+│           ├── toastr.js.map
+│           └── toastr.min.js
+├── tests
+│   ├── global_test.php
+│   └── permission_test.php
+├── .gitignore
 ├── autoload.php
 ├── credentials.txt
 ├── index.php
-├── jobs.txt
-├── js_refactor_log.txt
 ├── README.md
-├── refactoring_plan.txt
 ├── Specification.pdf
-├── specification.txt
 └── test_db.php
 ```
 
 ### Contributing
 
 - This is a student project. For feedback or improvements, contact the author.
+
+## 👥 Authors
+
+- **Nikolovski Dejan** - [@Dejan.Nikolovski-FS21](https://git.brainster.co/Dejan.Nikolovski-FS21/brainsterchallenges_nikolovskidejan_fs21)

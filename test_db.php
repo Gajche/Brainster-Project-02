@@ -1,8 +1,9 @@
 <?php
 
 // test_db.php
-require_once __DIR__ . '/includes/config.php';  // Config first
-require_once Config::ROOT_DIR . '/models/Database.php';
+
+require_once __DIR__ . '../backend/includes/config.php';
+require_once Config::BACKEND_DIR . '/models/Database.php';
 
 try {
   $db = Database::getInstance();
