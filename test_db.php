@@ -2,7 +2,7 @@
 
 // test_db.php
 
-require_once __DIR__ . '../backend/includes/config.php';
+require_once __DIR__ . '../backend/includes/classes/Config.php';
 require_once Config::BACKEND_DIR . '/models/Database.php';
 
 try {

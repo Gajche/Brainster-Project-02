@@ -120,7 +120,6 @@ ProjectRootFolder/
 ├── backend
 │   ├── controllers
 │   │   ├── auth_controller.php
-│   │   ├── auth_controller.php.bak
 │   │   ├── project_controller.php
 │   │   ├── task_controller.php
 │   │   └── user_controller.php
@@ -134,12 +133,12 @@ ProjectRootFolder/
 │   ├── models
 │   │   ├── Comment.php
 │   │   ├── Database.php
-│   │   ├── Database.php.bak
 │   │   ├── Project.php
 │   │   ├── Task.php
 │   │   └── User.php
 │   └── views
 │       ├── partials
+│       │   ├── confirm_modal.php
 │       │   ├── footer.php
 │       │   ├── header.php
 │       │   └── task_modal_content.php
@@ -167,6 +166,7 @@ ProjectRootFolder/
 │   │   ├── api.js
 │   │   ├── auth.js
 │   │   ├── comment.js
+│   │   ├── confirmDelete.js
 │   │   ├── kanban.js
 │   │   ├── main.js
 │   │   ├── modules.js
@@ -179,6 +179,12 @@ ProjectRootFolder/
 │       │   ├── bootstrap.min.css
 │       │   ├── bootstrap.min.css.map
 │       │   └── toastr.min.css
+│       ├── fontawesome
+│       │   ├── css
+│       │   │   ├── all.css
+│       │   │   └── all.min.css
+│       │   └── webfonts
+│       │       └── fa-solid-900.woff2
 │       └── js
 │           ├── bootstrap.bundle.min.js
 │           ├── bootstrap.bundle.min.js.map

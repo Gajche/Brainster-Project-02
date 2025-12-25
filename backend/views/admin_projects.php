@@ -91,7 +91,7 @@ $teamLeads = array_filter(User::getAll(), function ($u) {
         <td><?= $leadName ?></td>
         <td>
           <!-- Action buttons container with responsive gap -->
-          <div class="d-inline-flex flex-wrap gap-1 gap-sm-2">
+          <div class="d-inline-flex flex-wrap gap-1">
             <!-- Edit Button -->
             <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editProjectModal<?= $project->getId() ?>">
               <i class="fas fa-edit me-1"></i> Edit
