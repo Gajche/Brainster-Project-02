@@ -5,10 +5,6 @@
 // Ensure required models are loaded
 if (!class_exists('Task')) {
   require_once __DIR__ . '/../../autoload.php';
-
-  // require_once Config::ROOT_DIR . '/models/Task.php';
-  // require_once Config::ROOT_DIR . '/models/Comment.php';
-  // require_once Config::ROOT_DIR . '/models/User.php';
 }
 
 
@@ -39,12 +35,20 @@ if (isAdmin() || $isTeamLeadOfProject) {
   }
 } elseif ($currentUser->getLevel() === 'Mid') {
   // A Mid can assign tasks that are unassigned, or assigned to themselves or a Junior.
-  if (!$currentAssignee || in_array($currentAssignee->getLevel(), ['Mid', 'Junior'])) {
+  // Can assign if task is unassigned OR assigned to themselves OR assigned to a Junior
+  if (
+    !$currentAssignee ||
+    $currentAssignee->getId() === $userId ||
+    $currentAssignee->getLevel() === 'Junior'
+  ) {
     $canAssign = true;
   }
 }
-$canUnassign = $canAssign && $currentAssignee;
-// 
+// Mid users CANNOT unassign tasks 
+// But Admin, Team Leads, and Seniors CAN unassign
+$canUnassign = ($canAssign && $currentAssignee && $currentUser->getLevel() !== 'Mid');
+
+
 ?>
 
 <p><strong>Description:</strong> <?= htmlspecialchars($task->getDescription() ?: 'N/A') ?></p>
@@ -95,7 +99,7 @@ $canUnassign = $canAssign && $currentAssignee;
       <?php endif; ?>
 
       <?php if ($canEditTask): ?>
-        <button class="btn btn-sm btn-warning edit-task-btn" data-task-id="<?= $task->getId() ?>">
+        <button class="btn btn-warning edit-task-btn" data-task-id="<?= $task->getId() ?>">
           <i class="fas fa-edit me-1"></i> Edit Task
         </button>
       <?php endif; ?>
@@ -127,7 +131,7 @@ $canUnassign = $canAssign && $currentAssignee;
         <div class="mb-3">
           <textarea class="form-control" name="content" rows="2" required placeholder="Add a comment..."></textarea>
         </div>
-        <button type="submit" class="btn btn-primary btn-sm">
+        <button type="submit" class="btn btn-primary">
           <i class="fas fa-paper-plane me-1"></i> Post Comment
         </button>
       </form>

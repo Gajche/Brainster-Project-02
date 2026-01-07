@@ -1,5 +1,5 @@
 import { changeTaskStatus } from "./api.js";
-
+// Initialize Kanban board with SortableJS
 export function initKanban() {
   const kanbanColumns = document.querySelectorAll(".kanban-cards");
   if (kanbanColumns.length > 0) {

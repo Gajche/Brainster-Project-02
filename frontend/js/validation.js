@@ -1,5 +1,3 @@
-// js/validation.js
-
 // Validates entire form; returns true if valid, false if any invalid fields
 export function validateForm(form) {
   let valid = true;

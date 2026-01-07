@@ -1,4 +1,4 @@
-// js/admin_users.js - Handles Team Lead toggle
+// Handles Team Lead toggle
 export function init() {
   // Generic toggle function for level selects
   function toggleTeamLead(selectEl) {

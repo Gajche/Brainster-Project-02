@@ -1,6 +1,6 @@
 <?php
 
-// Database credentials - edit these for your local setup (edit includes/config.php as well)
+// Database credentials - edit these for your local setup (edit backend/includes/classes/Config.php as well)
 $host = 'localhost';
 $dbname = 'nikolovski_project_management';
 $user = 'root';
@@ -247,9 +247,13 @@ try {
 
   echo "Sample data seeded successfully.<br>";
   echo "Setup complete!<br>Default logins:<br>";
-  echo "admin@example.com / admin123<br>";
-  echo "New users: lead2@example.com / lead456 (Team Lead)<br>";
-  echo "senior2@example.com / senior456 (Senior)";
+  echo "admin@example.com     / admin123   (Name: Admin User)<br>";
+  echo "lead1@example.com     / lead123    (Name: Team Lead Senior 1)<br>";
+  echo "lead2@example.com     / lead456    (Name: Team Lead Senior 2)<br>";
+  echo "senior1@example.com   / senior123  (Name: Regular Senior 1)<br>";
+  echo "senior2@example.com   / senior456  (Name: Regular Senior 2)<br>";
+  echo "mid1@example.com      / mid123     (Name: Mid Developer 1)<br>";
+  echo "junior1@example.com   / junior123  (Name: Junior Developer 1)";
 } catch (PDOException $e) {
   die("Error: " . $e->getMessage());
 }

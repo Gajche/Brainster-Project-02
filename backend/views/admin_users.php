@@ -1,13 +1,7 @@
 <?php
-// Ensure Admin
-if (!isAdmin()) {
-  header('Location: ' . Config::getBaseUrl() . 'index.php?page=dashboard');
-  exit;
-}
-
-require_once __DIR__ . '/../../autoload.php';
-
-$users = User::getAll();
+// Extract data prepared by the controller
+extract($_SESSION['admin_users_data'] ?? []);
+unset($_SESSION['admin_users_data']); // Clean up session after use
 ?>
 
 <h2>Manage Users</h2>
@@ -32,7 +26,7 @@ $users = User::getAll();
           <label for="level" class="form-label">Level</label>
           <select class="form-select level-select" id="level" name="level" required data-team-lead-id="is_team_lead">
             <option value="">Select</option>
-            <?php foreach (Config::USER_LEVELS as $level): ?>
+            <?php foreach ($levels as $level): ?>
               <option value="<?= $level ?>"><?= $level ?></option>
             <?php endforeach; ?>
           </select>
@@ -253,16 +247,16 @@ $users = User::getAll();
               <input type="hidden" name="id" value="<?= $user['id'] ?>">
               <div class="mb-3">
                 <label for="name<?= $user['id'] ?>" class="form-label">Name</label>
-                <input type="text" class="form-control" id="name<?= $user['id'] ?>" name="name" value="<?= htmlspecialchars($user['name']) ?>" required>
+                <input type="text" class="form-control" id="name<?= $user['id'] ?>" name="name" autocomplete="name" value="<?= htmlspecialchars($user['name']) ?>" required>
               </div>
               <div class="mb-3">
                 <label for="email<?= $user['id'] ?>" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email<?= $user['id'] ?>" name="email" value="<?= htmlspecialchars($user['email']) ?>" required>
+                <input type="email" class="form-control" id="email<?= $user['id'] ?>" autocomplete="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required>
               </div>
               <div class="mb-3">
                 <label for="level<?= $user['id'] ?>" class="form-label">Level</label>
                 <select class="form-select level-select" id="level<?= $user['id'] ?>" name="level" required data-team-lead-id="is_team_lead<?= $user['id'] ?>">
-                  <?php foreach (Config::USER_LEVELS as $level): ?>
+                  <?php foreach ($levels as $level): ?>
                     <option value="<?= $level ?>" <?= $user['level'] === $level ? 'selected' : '' ?>><?= $level ?></option>
                   <?php endforeach; ?>
                 </select>

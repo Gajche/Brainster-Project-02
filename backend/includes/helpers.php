@@ -55,3 +55,21 @@ function redirectBack()
   header('Location: ' . $referer);
   exit;
 }
+
+/**
+ * Summary of renderConditionalDeleteAssets
+ * @param mixed $page
+ * @return void
+ */
+// Conditionally include delete confirmation modal and script
+function renderConditionalDeleteAssets($page)
+{
+  $pagesNeedingDelete = ['admin_projects', 'admin_users', 'project_view', 'task_view'];
+
+  if (in_array($page, $pagesNeedingDelete)): ?>
+    <!-- Reusable Delete Confirmation Modal -->
+    <?php include Config::BACKEND_DIR . '/views/partials/confirm_modal.php'; ?>
+    <!-- Confirm Delete Handler -->
+    <script src="<?= htmlspecialchars(Config::getBaseUrl() . 'frontend/js/confirmDelete.js') ?>"></script>
+<?php endif;
+}

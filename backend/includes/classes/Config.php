@@ -22,6 +22,11 @@ class Config
   const DB_USER = 'root';
   const DB_PASS = '';
 
+  // Session inactivity timeout (in seconds)
+
+  // const SESSION_TIMEOUT = 10; // 10 seconds test
+  const SESSION_TIMEOUT = 1800; // 30 minutes
+
   // ROOT_DIR now points to project root (two levels up from backend/includes/)
   const ROOT_DIR = __DIR__ . '/../../..';
 

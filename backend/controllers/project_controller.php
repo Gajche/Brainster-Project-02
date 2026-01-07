@@ -25,41 +25,58 @@ $userLevel = $_SESSION['user_level'];
 // Dispatches control to specific handler functions based on the 'action' parameter.
 $action = $_POST['action'] ?? $_GET['action'] ?? ''; // Safely retrieves action from POST or GET, defaulting to an empty string.
 
-switch ($action) {
-  case 'create':
-    requireAdmin(); // Enforces admin-level access for project creation.
-    handleCreate();
-    break;
 
-  case 'update':
-    requireAdmin(); // Enforces admin-level access for project updates.
-    handleUpdate();
-    break;
+try {
+  switch ($action) {
+    case 'create':
+      requireAdmin();
+      handleCreate();
+      break;
 
-  case 'delete':
-    requireAdmin(); // Enforces admin-level access for project deletion.
-    handleDelete();
-    break;
+    case 'update':
+      requireAdmin();
+      handleUpdate();
+      break;
 
-  case 'add_member':
-    // Parameter: $userId - The ID of the currently logged-in user, used for permission checks.
-    handleAddMember($userId);
-    break;
+    case 'delete':
+      requireAdmin();
+      handleDelete();
+      break;
 
-  case 'remove_member':
-    // Parameter: $userId - The ID of the currently logged-in user, used for permission checks.
-    handleRemoveMember($userId);
-    break;
+    case 'add_member':
+      handleAddMember($userId);
+      break;
 
-  case 'mark_done':
-    // Parameter: $userId - The ID of the currently logged-in user, used for permission checks.
-    handleMarkDone($userId);
-    break;
+    case 'remove_member':
+      handleRemoveMember($userId);
+      break;
 
-  default:
-    // Redirects to the dashboard if no valid action is provided.
+    case 'mark_done':
+      handleMarkDone($userId);
+      break;
+
+    default:
+      throw new ValidationException('Invalid action.');
+  }
+} catch (ValidationException $e) {
+  // For AJAX requests, use handleResponse
+  if (isAjax()) {
+    handleResponse(false, $e->getMessage(), null, 400);
+  } else {
+    // For regular requests, flash and redirect
+    $_SESSION[Config::FLASH_ERROR] = $e->getMessage();
     header('Location: ' . Config::getBaseUrl() . 'index.php?page=dashboard');
-    exit; // Terminates script execution after redirection.
+  }
+  exit;
+} catch (Exception $e) {
+  // Catch-all for unexpected errors
+  if (isAjax()) {
+    handleResponse(false, 'An unexpected error occurred.', null, 500);
+  } else {
+    $_SESSION[Config::FLASH_ERROR] = 'An unexpected error occurred.';
+    header('Location: ' . Config::getBaseUrl() . 'index.php?page=dashboard');
+  }
+  exit;
 }
 
 
@@ -98,30 +115,6 @@ function redirectToProject($projectId)
   exit; // Stops script execution to ensure immediate redirection.
 }
 
-/**
- * Send JSON response if AJAX request, otherwise continue with redirect
- * This function determines if the request is an AJAX request by checking the 'HTTP_X_REQUESTED_WITH' header.
- * If it is an AJAX request, a JSON response is sent, and the script exits.
- * Otherwise, the script continues its execution, typically leading to a subsequent redirect.
- * @param bool $success - Indicates if the operation was successful.
- * @param string $message - A descriptive message for the client.
- */
-function ajaxRespondAndRedirect(bool $success, string $message): void
-{
-  if (
-    !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-    strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
-  ) {
-    header('Content-Type: application/json');
-    echo json_encode([
-      'success' => $success,
-      'message' => $message
-    ]);
-    exit; // Exits script after sending JSON response for AJAX requests.
-  }
-}
-
-
 function handleCreate()
 {
   // Extracts and sanitizes project data from the POST request.
@@ -137,18 +130,16 @@ function handleCreate()
   // Validation
   // Checks for required fields: title and team_lead_id. If missing, sets error and handles response.
   if (empty($data['title']) || empty($data['team_lead_id'])) {
-    $_SESSION[Config::FLASH_ERROR] = 'Title and Team Lead required.';
-    ajaxRespondAndRedirect(false, 'Title and Team Lead required.');
-    redirectToPage('admin_projects'); // Redirects for non-AJAX requests.
+    handleResponse(false, 'Title and Team Lead required.', null, 400);
+    return;
   }
 
   // Validate Team Lead
   // Verifies if the provided team_lead_id corresponds to a valid 'Senior' level team lead.
   $lead = User::getById($data['team_lead_id']);
   if (!$lead || $lead->getLevel() !== 'Senior' || !$lead->isTeamLead()) {
-    $_SESSION[Config::FLASH_ERROR] = 'Invalid Team Lead.';
-    ajaxRespondAndRedirect(false, 'Invalid Team Lead.');
-    redirectToPage('admin_projects'); // Redirects for non-AJAX requests.
+    handleResponse(false, 'Invalid Team Lead.', null, 400);
+    return;
   }
 
   // Create project
@@ -156,18 +147,11 @@ function handleCreate()
   $projectId = Project::create($data);
 
   if ($projectId) {
-    $successMessage = 'Project created successfully.';
-    $_SESSION[Config::FLASH_SUCCESS] = $successMessage;
-    ajaxRespondAndRedirect(true, $successMessage);
+    handleResponse(true, 'Project created successfully.');
   } else {
-    $_SESSION[Config::FLASH_ERROR] = 'Project creation failed.';
-    ajaxRespondAndRedirect(false, 'Project creation failed.');
+    handleResponse(false, 'Project creation failed.', null, 500);
   }
-
-  // Final redirect for non-AJAX requests, or if ajaxRespondAndRedirect did not exit.
-  redirectToPage('admin_projects');
 }
-
 
 function handleUpdate()
 {
@@ -176,9 +160,8 @@ function handleUpdate()
 
   // Validates if a project ID was provided.
   if (empty($id)) {
-    $_SESSION[Config::FLASH_ERROR] = 'Invalid project ID.';
-    ajaxRespondAndRedirect(false, 'Invalid project ID.');
-    redirectToPage('admin_projects'); // Redirects for non-AJAX requests.
+    handleResponse(false, 'Invalid project ID.', null, 400);
+    return;
   }
 
   // Dynamically builds the data array with only the fields present in the POST request.
@@ -192,17 +175,11 @@ function handleUpdate()
 
   // Attempts to update the project with the provided ID and data.
   if (Project::update($id, $data)) {
-    $_SESSION[Config::FLASH_SUCCESS] = 'Project updated successfully.';
-    ajaxRespondAndRedirect(true, 'Project updated successfully.');
+    handleResponse(true, 'Project updated successfully.');
   } else {
-    $_SESSION[Config::FLASH_ERROR] = 'Project update failed.';
-    ajaxRespondAndRedirect(false, 'Project update failed.');
+    handleResponse(false, 'Project update failed.', null, 500);
   }
-
-  // Final redirect for non-AJAX requests, or if ajaxRespondAndRedirect did not exit.
-  redirectToPage('admin_projects');
 }
-
 
 function handleDelete()
 {
@@ -211,27 +188,17 @@ function handleDelete()
 
   // Validates if a project ID was provided.
   if (empty($id)) {
-    $_SESSION[Config::FLASH_ERROR] = 'Invalid project ID.';
-    ajaxRespondAndRedirect(false, 'Invalid project ID.');
-    redirectToPage('admin_projects'); // Redirects for non-AJAX requests.
+    handleResponse(false, 'Invalid project ID.', null, 400);
+    return;
   }
 
   // Attempts to delete the project with the specified ID.
   if (Project::delete($id)) {
-    $_SESSION[Config::FLASH_SUCCESS] = 'Project deleted successfully.';
-    ajaxRespondAndRedirect(true, 'Project deleted successfully.');
+    handleResponse(true, 'Project deleted successfully.');
   } else {
-    $_SESSION[Config::FLASH_ERROR] = 'Failed to delete project.';
-    ajaxRespondAndRedirect(false, 'Failed to delete project.');
+    handleResponse(false, 'Failed to delete project.', null, 500);
   }
-
-  // Final redirect for non-AJAX requests, or if ajaxRespondAndRedirect did not exit.
-  redirectToPage('admin_projects');
 }
-
-
-
-// PROJECT TEAM MANAGEMENT (Team Lead or Admin)
 
 /**
  * Handles adding a member to a project. Requires current user ($userId) to have management permissions.
@@ -245,43 +212,24 @@ function handleAddMember($userId)
   // Validation
   // Checks if both project ID and member ID are provided.
   if (empty($projectId) || empty($memberId)) {
-    // Note: `isAjax()` and `handleResponse()` are assumed helper functions not defined in this snippet.
-    if (isAjax()) {
-      handleResponse(false, 'Invalid data.', null, 400);
-    } else {
-      $_SESSION[Config::FLASH_ERROR] = 'Invalid data.';
-      redirectToProject($projectId); // Redirects to the project view, even if projectId is 0.
-    }
+    handleResponse(false, 'Invalid data.', null, 400);
+    return;
   }
 
   // Permission check
   // Retrieves the project and verifies if the current user has rights to manage its team.
   $project = Project::getById($projectId);
   if (!$project || !$project->canManageTeam($userId)) {
-    if (isAjax()) {
-      handleResponse(false, 'Access denied.', null, 403);
-    } else {
-      $_SESSION[Config::FLASH_ERROR] = 'Access denied.';
-      redirectToProject($projectId); // Redirects to the project view, even if project is not found.
-    }
+    handleResponse(false, 'Access denied.', null, 403);
+    return;
   }
 
   // Add member
   // Attempts to add the specified member to the project.
   if (Project::addMember($projectId, $memberId)) {
-    if (isAjax()) {
-      handleResponse(true, 'Member added successfully.');
-    } else {
-      $_SESSION[Config::FLASH_SUCCESS] = 'Member added successfully.';
-      redirectToProject($projectId);
-    }
+    handleResponse(true, 'Member added successfully.');
   } else {
-    if (isAjax()) {
-      handleResponse(false, 'Failed to add member.', null, 500);
-    } else {
-      $_SESSION[Config::FLASH_ERROR] = 'Failed to add member.';
-      redirectToProject($projectId);
-    }
+    handleResponse(false, 'Failed to add member.', null, 500);
   }
 }
 
@@ -297,43 +245,24 @@ function handleRemoveMember($userId)
   // Validation
   // Checks if both project ID and member ID are provided.
   if (empty($projectId) || empty($memberId)) {
-    // Note: `isAjax()` and `handleResponse()` are assumed helper functions not defined in this snippet.
-    if (isAjax()) {
-      handleResponse(false, 'Invalid data.', null, 400);
-    } else {
-      $_SESSION[Config::FLASH_ERROR] = 'Invalid data.';
-      redirectToProject($projectId); // Redirects to the project view, even if projectId is 0.
-    }
+    handleResponse(false, 'Invalid data.', null, 400);
+    return;
   }
 
   // Permission check
   // Retrieves the project and verifies if the current user has rights to manage its team.
   $project = Project::getById($projectId);
   if (!$project || !$project->canManageTeam($userId)) {
-    if (isAjax()) {
-      handleResponse(false, 'Access denied.', null, 403);
-    } else {
-      $_SESSION[Config::FLASH_ERROR] = 'Access denied.';
-      redirectToProject($projectId); // Redirects to the project view, even if project is not found.
-    }
+    handleResponse(false, 'Access denied.', null, 403);
+    return;
   }
 
   // Remove member
   // Attempts to remove the specified member from the project.
   if (Project::removeMember($projectId, $memberId)) {
-    if (isAjax()) {
-      handleResponse(true, 'Member removed successfully.');
-    } else {
-      $_SESSION[Config::FLASH_SUCCESS] = 'Member removed successfully.';
-      redirectToProject($projectId);
-    }
+    handleResponse(true, 'Member removed successfully.');
   } else {
-    if (isAjax()) {
-      handleResponse(false, 'Failed to remove member.', null, 500);
-    } else {
-      $_SESSION[Config::FLASH_ERROR] = 'Failed to remove member.';
-      redirectToProject($projectId);
-    }
+    handleResponse(false, 'Failed to remove member.', null, 500);
   }
 }
 
@@ -348,30 +277,25 @@ function handleMarkDone($userId)
 
   // Validates if a project ID was provided.
   if (empty($id)) {
-    $_SESSION[Config::FLASH_ERROR] = 'Invalid project ID.';
-    // Potential issue: Redirecting with an invalid ID (0) may lead to an incorrect or error page.
-    redirectToProject($id);
+    handleResponse(false, 'Invalid project ID.', null, 400);
+    return;
   }
 
   // Permission check
   // Retrieves the project and verifies if the current user has rights to manage its team.
   $project = Project::getById($id);
   if (!$project || !$project->canManageTeam($userId)) {
-    $_SESSION[Config::FLASH_ERROR] = 'Access denied.';
-    // Potential issue: Redirecting with an invalid ID (0) may lead to an incorrect or error page.
-    redirectToProject($id);
+    handleResponse(false, 'Access denied.', null, 403);
+    return;
   }
 
   // Mark project as done
   // Attempts to mark the project as done. The underlying Project::markDone() method
   // likely contains business logic to check if all project tasks are completed.
   if (Project::markDone($id)) {
-    $_SESSION[Config::FLASH_SUCCESS] = 'Project marked as Done.';
+    handleResponse(true, 'Project marked as Done.');
   } else {
     // This message implies Project::markDone() has internal validation for task completion.
-    $_SESSION[Config::FLASH_ERROR] = 'Cannot mark Done: Not all tasks are complete.';
+    handleResponse(false, 'Cannot mark Done: Not all tasks are complete.', null, 400);
   }
-
-  // Final redirect to the project view.
-  redirectToProject($id);
 }

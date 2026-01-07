@@ -192,7 +192,9 @@ echo "<div class='test-case'>";
 echo "<strong>6.4 Input Validation:</strong><br>";
 echo "• Server-side validation: ✅ (All controllers validate input)<br>";
 echo "• Client-side validation: ✅ (validation.js exists)<br>";
-echo "• Whitelist allowed pages: ✅ (index.php has $allowedPages array)<br>";
+// echo "• Whitelist allowed pages: ✅ (index.php has $allowedPages array)<br>";
+echo "• Whitelist allowed pages: ✅ (Enforced in index.php routing logic)<br>";
+
 echo "</div>";
 
 echo "</div>";

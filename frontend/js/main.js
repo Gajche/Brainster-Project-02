@@ -1,5 +1,3 @@
-// js/main.js
-
 import { configureToastr } from "./ui.js";
 import {
   initAuth,
@@ -9,6 +7,10 @@ import {
 } from "./modules.js";
 import { handleAjaxFormSubmit } from "./api.js";
 import { validateForm, validateField } from "./validation.js";
+import { initPageUtils } from "./pageUtils.js";
+import { initSystemHealthCheck } from "./systemHealth.js";
+
+initPageUtils();
 
 // Page-specific module loader
 async function loadPageSpecificModules() {
@@ -42,6 +44,9 @@ $(function () {
     configureToastr();
   }
 
+  // System health check (DB / MySQL / Apache)
+  initSystemHealthCheck();
+
   // Init core modules
   [initAuth, initKanban, initTaskModals, initComments].forEach((init) =>
     init()
@@ -49,7 +54,7 @@ $(function () {
 
   loadPageSpecificModules().catch(console.error);
 
-  // FORM SUBMIT (ALL FORMS) - FIXED ORDER
+  // FORM SUBMIT (ALL FORMS)
   $(document).on("submit", "form", function (e) {
     // For AJAX forms, prevent default FIRST
     if ($(this).hasClass("ajax-form")) {

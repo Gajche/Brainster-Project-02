@@ -1,6 +1,6 @@
 $(document).ready(function () {
   let pendingAction = null;
-
+// Handle click on elements with data-confirm-delete attribute
   $(document).on("click", "[data-confirm-delete]", function (e) {
     e.preventDefault();
 
@@ -14,7 +14,7 @@ $(document).ready(function () {
 
     pendingAction = function () {
       if (form.hasClass("ajax-form")) {
-        // AJAX form: temporarily make button submit type to trigger handler
+        // AJAX form: make button submit type to trigger handler
         button.prop("type", "submit");
         form.submit();
         setTimeout(() => button.prop("type", "button"), 100);
@@ -24,11 +24,8 @@ $(document).ready(function () {
       }
     };
 
-    // pendingAction = function () {
-    //   form.trigger("submit");
-    // };
-
-    // === Dynamic Modal Customization ===
+    
+    // Dynamic Modal Customization
 
     // Default: destructive (delete)
     let headerClass = "bg-danger text-white";

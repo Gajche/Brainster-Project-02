@@ -13,7 +13,7 @@ $currentUserEmail = $_SESSION['user_email'] ?? '';
 <div class="row justify-content-center">
   <div class="col-md-6">
     <div class="card">
-      <h5 class="card-header bg-warning">Change Password</h5>
+      <h5 class="card-header bg-warning text-center">Change Password</h5>
       <div class="card-body shadow">
         <form class="ajax-form" data-reload="true" method="POST" autocomplete="off" action="<?= Config::getBaseUrl() ?>backend/controllers/auth_controller.php">
           <input type="hidden" name="action" value="change_password">
@@ -38,7 +38,7 @@ $currentUserEmail = $_SESSION['user_email'] ?? '';
             <label for="repeat_new_password" class="form-label">Repeat New Password</label>
             <input type="password" class="form-control" id="repeat_new_password" name="repeat_new_password" autocomplete="new-password" required>
           </div>
-          <button type="submit" class="btn btn-primary">Change Password</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-key me-2"></i>Change Password</button>
         </form>
       </div>
     </div>

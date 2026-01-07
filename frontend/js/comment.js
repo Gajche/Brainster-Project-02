@@ -1,8 +1,7 @@
-// comment.js
 import { showToast } from "./ui.js";
 import { escapeHtml } from "./utils.js";
 import { loadModalContent } from "./taskModal.js";
-
+// Handle Add Comment form submission via AJAX
 function handleAddComment(e) {
   e.preventDefault();
   const form = $(e.currentTarget);
@@ -14,7 +13,7 @@ function handleAddComment(e) {
   submitBtn
     .html('<span class="spinner-border spinner-border-sm"></span> Adding...')
     .prop("disabled", true);
-
+  // AJAX request to add comment
   $.ajax({
     url: form.attr("action"),
     type: "POST",
@@ -24,12 +23,12 @@ function handleAddComment(e) {
     success: function (response) {
       if (response.success && response.data?.comment) {
         showToast("success", response.message || "Comment added!");
-
+        // Clear any "no comments" message
         commentsList.find(".alert-info").remove();
         if (commentsList.find(".list-group").length === 0) {
           commentsList.html('<div class="list-group"></div>');
         }
-
+        // Append new comment to the list
         const comment = response.data.comment;
         const newCommentHtml = `
           <div class="list-group-item">
@@ -55,7 +54,7 @@ function handleAddComment(e) {
     },
   });
 }
-
+// Handle Edit Comment button click
 function handleEditCommentClick(e) {
   const commentId = $(e.currentTarget).data("comment-id");
   const modalEl = document.getElementById("editCommentModal");
@@ -64,7 +63,7 @@ function handleEditCommentClick(e) {
 
   const modalTitle = $("#editCommentModalTitle");
   const modalBody = $("#edit-comment-modal-body");
-
+  // Load edit form into modal via AJAX
   loadModalContent(
     "backend/controllers/task_controller.php",
     { action: "get_comment_edit_form", comment_id: commentId },
@@ -72,7 +71,7 @@ function handleEditCommentClick(e) {
     modalBody
   );
 }
-
+// Initialize comment functionality
 export function initComments() {
   $("#add-comment-form").on("submit", handleAddComment);
   $(document).on("click", ".edit-comment-btn", handleEditCommentClick);

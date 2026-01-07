@@ -32,6 +32,7 @@ class Database
     }
   }
 
+  // Get the singleton PDO instance
   public static function getInstance()
   {
     if (self::$instance === null) {

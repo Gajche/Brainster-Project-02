@@ -8,6 +8,7 @@
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=flat-square&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![jQuery](https://img.shields.io/badge/jQuery-0769AD?style=flat-square&logo=jquery&logoColor=white)](https://jquery.com/)
 [![AJAX](https://img.shields.io/badge/AJAX-007ACC?style=flat-square&logoColor=white)](https://api.jquery.com/jquery.ajax/)
+[![SortableJS](https://img.shields.io/badge/SortableJS-2C3E50?style=flat-square&logo=javascript&logoColor=white)](https://sortablejs.github.io/Sortable/)
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat-square&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat-square&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
 [![Toastr](https://img.shields.io/badge/Toastr-FF9800?style=flat-square&logoColor=white)](https://codeseven.github.io/toastr/)
@@ -46,10 +47,12 @@ The system is divided into a regular application for users and an Admin panel fo
 - **JavaScript** - Client-side interactivity and dynamic features
 - **Bootstrap** - Responsive front-end framework for fast UI development
 - **jQuery** - Simplified DOM manipulation and AJAX handling
+- **SortableJS** - Drag-and-drop sorting for tasks and UI elements
 - **HTML5** - Semantic structure and modern web standards
 - **CSS3** - Styling, animations, and responsive design
 - **Toastr** - Elegant, non-blocking toast notifications
 - **JSDoc** - Inline documentation generation for JavaScript code
+- **PHPDoc** - Inline documentation generation for PHP code
 
 ## Installation and Setup
 
@@ -71,11 +74,43 @@ The system is divided into a regular application for users and an Admin panel fo
 
 2. Database Configuration:
 
-- Edit backend/includes/config.php with your MySQL credentials (DB_HOST, DB_NAME, etc.).
-- Run database/create_db.php in a browser or via PHP CLI to create the database, tables, and seed sample data.
+- Edit backend/includes/classes/Config.php with your MySQL credentials (DB_HOST, DB_NAME, etc.).
+
+### First-Time Setup: Database Not Initialized
+
+If the database does not exist or tables are missing (common on fresh setup):
+
+1. Open XAMMP, start MySQL and Apache.
+2. Open the application in your browser (e.g., `http://localhost:8000`).
+3. A modal will automatically appear with the message:  
+   _"The database is missing. Please initialize it below. This will create the database and seed sample data (DEV only)."_
+4. Click the **Setup** (or **Initialize Database**) button in the modal.
+5. Wait for the loading spinner ("Setting up...").
+6. On success: A green toast notification will show "Database initialized successfully!", and the page will automatically reload after 1.5 seconds.
+7. After reload: The app is fully ready. Log in with the default Admin credentials (listed below) or other seeded users.
+
+> **Alternative 1 (CLI method)**: If preferred, run `php database/create_db.php` from the terminal in the project root - this bypasses the modal and directly initializes the DB.
+
+#### Optional - 2.a (if the above methods doesn't work)
+
+- Run db_sql/create_db_full_with_drop.php in a browser or via PHP CLI to create the database, tables, and seed sample data.
+- (this will drop/delete any exisiting db with the same name and create a new one with all the tables and seed sample data)
+
+#### Optional - 2.b Import database
+
+- Open **phpMyAdmin**
+- Create a new database (e.g., `nikolovski_project_management`)
+- Import `db_sql/create_db.sql`
+- Or Import via terminal (prerequisites: Database CLI Tools or SQL Server, SQLTools extension):
+
+```bash
+mysql -u root < db_sql/create_db.sql
+
+```
 
 3. Run the Application:
 
+- Open XAMMP, start MySQL and Apache.
 - Start PHP server: php -S localhost:8000.
 - Access http://localhost:8000 in your browser.
 
@@ -107,6 +142,10 @@ The system is divided into a regular application for users and an Admin panel fo
 
 ![ER Diagram](docs/er-diagram.svg)
 
+### Designer view (phpMyAdmin)
+
+![Designer view](docs/designer_view_tables.png)
+
 ### Development Notes
 
 - Branching: Developed on dev branch with feature branches merged in.
@@ -118,29 +157,42 @@ The system is divided into a regular application for users and an Admin panel fo
 ```
 ProjectRootFolder/
 ├── backend
+│   ├── api
+│   │   └── system_health.php
 │   ├── controllers
+│   │   ├── admin_projects_controller.php
+│   │   ├── admin_users_controller.php
 │   │   ├── auth_controller.php
+│   │   ├── dashboard_controller.php
 │   │   ├── project_controller.php
+│   │   ├── project_view_controller.php
 │   │   ├── task_controller.php
-│   │   └── user_controller.php
+│   │   ├── user_controller.php
 │   ├── includes
 │   │   ├── classes
 │   │   │   ├── Config.php
+│   │   │   ├── DatabaseHelper.php
 │   │   │   ├── Exceptions.php
+│   │   │   ├── ProjectHelper.php
+│   │   │   ├── Router.php
 │   │   │   └── Validator.php
 │   │   ├── api.php
-│   │   └── helpers.php
+│   │   ├── helpers.php
+│   │   └── session_guard.php
 │   ├── models
 │   │   ├── Comment.php
 │   │   ├── Database.php
 │   │   ├── Project.php
 │   │   ├── Task.php
-│   │   └── User.php
+│   │   ├── User.php
 │   └── views
+│       ├── bootstrap
+│       │   └── task_view_context.php
 │       ├── partials
 │       │   ├── confirm_modal.php
 │       │   ├── footer.php
 │       │   ├── header.php
+│       │   ├── system_db_modal.php
 │       │   └── task_modal_content.php
 │       ├── admin_panel.php
 │       ├── admin_projects.php
@@ -152,11 +204,21 @@ ProjectRootFolder/
 │       ├── register.php
 │       └── task_view.php
 ├── database
-│   └── create_db_with_created_by.php
+│   ├── classes
+│   │   ├── DatabaseInitializer.php
+│   │   ├── DatabaseSchema.php
+│   │   └── DatabaseSeeder.php
+│   └── create_db.php
+├── db_sql
+│   ├── create_db_full_with_drop.php
+│   ├── create_db.sql
+│   └── nikolovski_project_management.sql
 ├── docs
+│   ├── designer_view_tables.png
 │   ├── er-diagram.drawio
 │   ├── er-diagram.png
-│   └── er-diagram.svg
+│   ├── er-diagram.svg
+│   └── nikolovski_project_management.svg
 ├── frontend
 │   ├── css
 │   │   ├── custom.css
@@ -170,6 +232,8 @@ ProjectRootFolder/
 │   │   ├── kanban.js
 │   │   ├── main.js
 │   │   ├── modules.js
+│   │   ├── pageUtils.js
+│   │   ├── systemHealth.js
 │   │   ├── taskModal.js
 │   │   ├── ui.js
 │   │   ├── utils.js
@@ -193,6 +257,9 @@ ProjectRootFolder/
 │           ├── Sortable.min.js
 │           ├── toastr.js.map
 │           └── toastr.min.js
+├── password_log
+│   ├── admin_password_log.php
+│   └── user_passwords.txt
 ├── tests
 │   ├── global_test.php
 │   └── permission_test.php
@@ -204,6 +271,18 @@ ProjectRootFolder/
 ├── Specification.pdf
 └── test_db.php
 ```
+
+## Live Test Deployment
+
+A temporary test deployment of the application is available for demonstration purposes:
+
+🔗 **URL:** https://pma.free.nf
+
+> ⚠️ **Note:**  
+> This deployment is intended **for testing and preview only**.  
+> Data may be reset at any time, performance may vary, and the environment is not production-hardened.
+
+You can use the default credentials listed to explore role-based access, project management flows, and task handling across different user roles.
 
 ### Contributing
 

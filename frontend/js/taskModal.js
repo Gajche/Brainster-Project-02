@@ -1,5 +1,3 @@
-// taskModal.js
-
 import { showToast } from "./ui.js";
 // Load modal content via AJAX
 export function loadModalContent(url, data, modalTitle, modalBody) {

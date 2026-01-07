@@ -1,4 +1,5 @@
 <?php
+// Front Controller: routes requests, loads controllers and views
 
 // Ignore favicon requests
 if (isset($_SERVER['REQUEST_URI']) && $_SERVER['REQUEST_URI'] === '/favicon.ico') {
@@ -24,16 +25,24 @@ $allowedPages = [
   'admin_projects'
 ];
 
+// Merge with router pages (optional - for consistency)
+$allowedPages = array_unique(array_merge($allowedPages, Router::getAllowedPages()));
+
 if (!in_array($page, $allowedPages)) {
   $page = isLoggedIn() ? 'dashboard' : 'login';
 }
 
-// Handle flash messages (display once)
+// Load the controller FIRST so it can set flash messages
+Router::loadController($page);
+
+// Handle flash messages (display once) - AFTER controller runs
 $flashSuccess = $_SESSION[Config::FLASH_SUCCESS] ?? '';
 $flashError   = $_SESSION[Config::FLASH_ERROR]   ?? '';
+
+// Clear flash messages AFTER displaying them
 unset($_SESSION[Config::FLASH_SUCCESS], $_SESSION[Config::FLASH_ERROR]);
 
-// Resolve view path (now in backend/views/)
+// View path (backend/views/)
 $viewPath = Config::BACKEND_DIR . "/views/{$page}.php";
 
 ?>
@@ -50,7 +59,6 @@ $viewPath = Config::BACKEND_DIR . "/views/{$page}.php";
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="frontend/vendor/css/bootstrap.min.css">
   <link rel="stylesheet" href="frontend/vendor/fontawesome/css/all.min.css">
-  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"> -->
 
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -112,13 +120,10 @@ $viewPath = Config::BACKEND_DIR . "/views/{$page}.php";
   <script type="module" src="frontend/js/main.js"></script>
 
   <!-- Delete Global -->
-  <!-- Reusable Delete Confirmation Modal -->
-  <?php include 'backend/views/partials/confirm_modal.php'; ?>
+  <?php renderConditionalDeleteAssets($page); ?>
 
-  <!-- Confirm Delete Handler (only on pages that need deletes) -->
-  <?php if (in_array($page, ['admin_projects', 'admin_users', 'project_view', 'task_view'])): ?>
-    <script src="frontend/js/confirmDelete.js"></script>
-  <?php endif; ?>
+  <!-- System DB Modal -->
+  <?php require_once Config::BACKEND_DIR . '/views/partials/system_db_modal.php'; ?>
 
 </body>
 

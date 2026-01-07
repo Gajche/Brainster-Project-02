@@ -6,7 +6,8 @@ if (!isAdmin()) {
 }
 ?>
 
-<h2>Admin Panel</h2>
+<!-- Admin Panel View -->
+<h2><i class="fas fa-user-shield me-2"></i>Admin Panel</h2>
 
 <div class="row">
   <div class="col-md-6">

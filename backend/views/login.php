@@ -6,9 +6,10 @@ if (isLoggedIn()) {
 }
 ?>
 
+<!-- Login View -->
 <div class="row justify-content-center">
   <div class="col-md-6">
-    <div class="card shadow-sm">
+    <div class="card shadow">
       <div class="card-header bg-primary text-white text-center">
         <h4 class="mb-0">Login</h4>
       </div>
@@ -24,7 +25,7 @@ if (isLoggedIn()) {
               id="login"
               name="login"
               placeholder="Enter your name or email"
-              autocomplete="username-or-email"
+              autocomplete="email"
               required
               autofocus>
           </div>
@@ -65,13 +66,3 @@ if (isLoggedIn()) {
     </div>
   </div>
 </div>
-
-<!-- <script type="module">
-  import {
-    initAuth
-  } from "./js/auth.js";
-  $(function() {
-    console.log("Login page: attaching blue button handler...");
-    initAuth();
-  });
-</script> -->

@@ -1,126 +1,15 @@
 <?php
-// Ensure logged in
-if (!isLoggedIn()) {
-  header('Location: ' . Config::getBaseUrl() . 'index.php?page=login');
-  exit;
-}
-
-require_once __DIR__ . '/../../autoload.php';
-
-$projectId = $_GET['id'] ?? 0;
-$project = Project::getById($projectId);
-$userId = $_SESSION['user_id'];
-$userLevel = $_SESSION['user_level'] ?? null;
-$isTeamLead = $project && $project->canManageTeam($userId);
-
-if (!$project || !$project->canAccess($userId)) {
-  $_SESSION[Config::FLASH_ERROR] = 'Project not found or access denied.';
-  header('Location: ' . Config::getBaseUrl() . 'index.php?page=dashboard');
-  exit;
-}
-
-// Helper functions for project status
-function getDaysRemaining($deadline)
-{
-  if (!$deadline) return null;
-  $deadlineDate = strtotime($deadline);
-  $today = strtotime(date('Y-m-d'));
-  $diff = $deadlineDate - $today;
-  return floor($diff / (60 * 60 * 24));
-}
-
-function getProjectStatusInfo($project)
-{
-  $status = $project->getStatus();
-  $deadline = $project->getDeadline();
-
-  if ($status === 'Done') {
-    return [
-      'headerClass' => 'bg-primary text-white',
-      'cardClass' => 'border-primary',
-      'badge' => '✓ Project Completed',
-      'badgeClass' => 'bg-primary',
-      'textClass' => 'text-primary',
-      'icon' => '✓',
-      'message' => 'This project has been completed'
-    ];
-  }
-
-  $daysRemaining = getDaysRemaining($deadline);
-
-  if ($daysRemaining === null) {
-    return [
-      'headerClass' => 'bg-secondary text-white',
-      'cardClass' => 'border-secondary',
-      'badge' => '🔄 Active Project',
-      'badgeClass' => 'bg-secondary',
-      'textClass' => 'text-secondary',
-      'icon' => '🔄',
-      'message' => 'No deadline set'
-    ];
-  }
-
-  if ($daysRemaining < 0) {
-    return [
-      'headerClass' => 'bg-danger text-white',
-      'cardClass' => 'border-danger',
-      'badge' => '⚠️ Project Overdue',
-      'badgeClass' => 'bg-danger',
-      'textClass' => 'text-danger',
-      'icon' => '⚠️',
-      'message' => abs($daysRemaining) . ' days overdue'
-    ];
-  }
-
-  if ($daysRemaining <= 7) {
-    return [
-      'headerClass' => 'bg-warning',
-      'cardClass' => 'border-warning',
-      'badge' => '⏰ Due Soon',
-      'badgeClass' => 'bg-warning text-dark',
-      'textClass' => 'text-warning',
-      'icon' => '⏰',
-      'message' => 'Only ' . $daysRemaining . ' days remaining'
-    ];
-  }
-
-  return [
-    'headerClass' => 'bg-success text-white',
-    'cardClass' => 'border-success',
-    'badge' => '✓ On Track',
-    'badgeClass' => 'bg-success',
-    'textClass' => 'text-success',
-    'icon' => '✓',
-    'message' => $daysRemaining . ' days remaining'
-  ];
-}
-
-$statusInfo = getProjectStatusInfo($project);
-$isProjectOverdue = strpos($statusInfo['badge'], 'Overdue') !== false;
-
-$team = User::getProjectTeam($projectId);
-$allUsers = User::getAll();
-$availableMembers = array_filter($allUsers, function ($u) use ($team) {
-  return !in_array($u['id'], array_column($team, 'id')) && $u['level'] !== 'Admin';
-});
-
-$tasks = Task::getByProject($projectId);
-
-// Group tasks by status for Kanban view
-$tasksByStatus = [];
-foreach (Config::TASK_STATUSES as $status) {
-  $tasksByStatus[$status] = [];
-}
-foreach ($tasks as $task) {
-  $tasksByStatus[$task->getStatus()][] = $task;
-}
+extract($_SESSION['project_view_data'] ?? []);
+unset($_SESSION['project_view_data']);
 ?>
 
+<!-- Project Title and Status -->
 <h2>
   <?= htmlspecialchars($project->getTitle()) ?>
   <span class="badge <?= $statusInfo['badgeClass'] ?> ms-2"><?= $statusInfo['badge'] ?></span>
 </h2>
 
+<!-- Project Details Card -->
 <div class="card mb-4 shadow <?= $statusInfo['cardClass'] ?>" style="border-width: 1px;">
   <div class="card-header <?= $statusInfo['headerClass'] ?>">
     <strong>Project Details</strong>
@@ -153,6 +42,7 @@ foreach ($tasks as $task) {
   </div>
 </div>
 
+<!-- Team Members Table -->
 <h3>Team Members</h3>
 <table class="table table-striped mb-4">
   <thead>
@@ -176,11 +66,7 @@ foreach ($tasks as $task) {
                 <input type="hidden" name="action" value="remove_member">
                 <input type="hidden" name="project_id" value="<?= $projectId ?>">
                 <input type="hidden" name="member_id" value="<?= $member['id'] ?>">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-danger"
-                  data-confirm-delete
-                  data-confirm-message="Are you sure you want to remove <strong><?= htmlspecialchars($member['name']) ?></strong> from this project?<br><br>They will lose access to all tasks and project data.">
+                <button type="button" class="btn btn-sm btn-danger" data-confirm-delete data-confirm-message="Are you sure you want to remove <strong><?= htmlspecialchars($member['name']) ?></strong> from this project?<br><br>They will lose access to all tasks and project data.">
                   <i class="fas fa-user-times me-1"></i>Remove
                 </button>
               </form>
@@ -192,10 +78,10 @@ foreach ($tasks as $task) {
   </tbody>
 </table>
 
+<!-- Add Team Member Form -->
 <?php if ($isTeamLead): ?>
-  <!-- Add Member Form -->
   <div class="card mb-4 shadow">
-    <div class="card-header fw-bold bg-info">Add Team Member</div>
+    <div class="card-header fw-bold bg-dark text-white">Add Team Member</div>
     <div class="card-body">
       <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/project_controller.php">
         <input type="hidden" name="action" value="add_member">
@@ -219,10 +105,10 @@ foreach ($tasks as $task) {
 
 <h3>Tasks</h3>
 
-<?php if (User::getById($userId)->canCreateTask($projectId)): ?>
-  <!-- Create Task Form -->
+<!-- Create Task Form -->
+<?php if ($canCreateTask): ?>
   <div class="card mb-4 shadow">
-    <div class="card-header fw-bold bg-info">Create New Task</div>
+    <div class="card-header fw-bold bg-dark text-white">Create New Task</div>
     <div class="card-body">
       <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php">
         <input type="hidden" name="action" value="create">
@@ -239,9 +125,7 @@ foreach ($tasks as $task) {
           <label for="assignee_id" class="form-label">Assign To</label>
           <select class="form-select" id="assignee_id" name="assignee_id">
             <option value="">Unassigned</option>
-            <?php
-            $assignableUsers = User::getById($userId)->getAssignableUsers($projectId);
-            foreach ($assignableUsers as $assignee): ?>
+            <?php foreach ($assignableUsers as $assignee): ?>
               <option value="<?= $assignee['id'] ?>"><?= htmlspecialchars($assignee['name']) ?> (<?= htmlspecialchars($assignee['level']) ?>)</option>
             <?php endforeach; ?>
           </select>
@@ -254,40 +138,45 @@ foreach ($tasks as $task) {
   </div>
 <?php endif; ?>
 
+<!-- Kanban Board -->
 <div class="row">
   <?php foreach (Config::TASK_STATUSES as $status): ?>
     <div class="col-12 col-md-6 col-xl-3">
       <div class="kanban-column mb-3 shadow" data-status="<?= htmlspecialchars($status) ?>">
-        <div class="kanban-column-header"><?= htmlspecialchars($status) ?></div>
+        <div class="kanban-column-header"><?= htmlspecialchars($status) ?> (<?= count($tasksByStatus[$status]) ?>)</div>
         <div class="kanban-cards shadow">
-          <?php foreach ($tasksByStatus[$status] as $task): ?>
-            <?php
-            $assigned = User::getById($task->getAssignedTo());
-            $assignedName = $assigned ? htmlspecialchars($assigned->getName()) : 'Unassigned';
-            $creator = User::getById($task->getCreatedBy());  // New: Get creator
-            $creatorName = $creator ? htmlspecialchars($creator->getName()) : 'Unknown';  // New: Creator name
-            $canEditDelete = $userLevel === 'Admin' || ($userLevel === 'Senior' && User::isInProject($userId, $projectId));
-
-            // Show overdue indicator if project is overdue and task is not Done
-            $showOverdue = $isProjectOverdue && $task->getStatus() !== 'Done';
-            ?>
-            <div class="kanban-card <?= $showOverdue ? 'border-danger' : '' ?>" data-task-id="<?= $task->getId() ?>">
-              <?php if ($showOverdue): ?>
-                <span class="badge bg-danger mb-2">⚠️ OVERDUE</span>
-              <?php endif; ?>
-              <div class="kanban-card-title"><?= htmlspecialchars($task->getTitle()) ?></div>
-              <div class="kanban-card-meta">
-                <small>Assigned: <?= $assignedName ?></small><br>
-                <small>Created: <?= htmlspecialchars($task->getCreatedAt()) ?></small><br>
-                <small>Created by: <?= $creatorName ?></small>
-              </div>
-              <div class="kanban-card-actions mt-2">
-                <button class="btn btn-sm btn-info view-task-btn" data-task-id="<?= $task->getId() ?>">
-                  <i class="fas fa-eye me-1"></i> View
-                </button>
-              </div>
+          <?php if (empty($tasksByStatus[$status])): ?>
+            <div class="text-center text-muted p-4">
+              <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i>
+              <p>No tasks in this status yet</p>
             </div>
-          <?php endforeach; ?>
+          <?php else: ?>
+            <?php foreach ($tasksByStatus[$status] as $task): ?>
+              <?php
+              $assigned = User::getById($task->getAssignedTo());
+              $assignedName = $assigned ? htmlspecialchars($assigned->getName()) : 'Unassigned';
+              $creator = User::getById($task->getCreatedBy());
+              $creatorName = $creator ? htmlspecialchars($creator->getName()) : 'Unknown';
+              $showOverdue = $isProjectOverdue && $task->getStatus() !== 'Done';
+              ?>
+              <div class="kanban-card <?= $showOverdue ? 'border-danger' : '' ?>" data-task-id="<?= $task->getId() ?>">
+                <?php if ($showOverdue): ?>
+                  <span class="badge bg-danger mb-2">⚠️ OVERDUE</span>
+                <?php endif; ?>
+                <div class="kanban-card-title"><?= htmlspecialchars($task->getTitle()) ?></div>
+                <div class="kanban-card-meta">
+                  <small>Assigned: <?= $assignedName ?></small><br>
+                  <small>Created: <?= htmlspecialchars($task->getCreatedAt()) ?></small><br>
+                  <small>Created by: <?= $creatorName ?></small>
+                </div>
+                <div class="kanban-card-actions mt-2">
+                  <button class="btn btn-sm btn-info view-task-btn" data-task-id="<?= $task->getId() ?>">
+                    <i class="fas fa-eye me-1"></i> View
+                  </button>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
         </div>
       </div>
     </div>

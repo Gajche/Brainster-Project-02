@@ -18,6 +18,11 @@ spl_autoload_register(function ($className) {
     'Project'  => __DIR__ . '/backend/models/Project.php',
     'Task'     => __DIR__ . '/backend/models/Task.php',
     'Comment'  => __DIR__ . '/backend/models/Comment.php',
+    // Application / helper classes
+    'ProjectHelper'   => __DIR__ . '/backend/includes/classes/ProjectHelper.php',
+    'Router'          => __DIR__ . '/backend/includes/classes/Router.php',
+    'DatabaseHelper'  => __DIR__ . '/backend/includes/classes/DatabaseHelper.php',
+
   ];
 
   // If the class exists in our map, require it
@@ -26,7 +31,5 @@ spl_autoload_register(function ($className) {
   }
 });
 
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-  session_start();
-}
+// Session guard for inactivity timeout
+require_once __DIR__ . '/backend/includes/session_guard.php';

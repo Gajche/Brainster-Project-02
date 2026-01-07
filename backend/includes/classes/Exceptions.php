@@ -49,13 +49,15 @@ class AuthenticationException extends Exception
   }
 }
 
-/**
- * Thrown when a database operation fails
- */
+
+
 class DatabaseException extends Exception
 {
-  public function __construct(string $message = "Database error occurred", int $code = 500)
-  {
-    parent::__construct($message, $code);
+  public function __construct(
+    string $message = "Database error occurred",
+    int $code = 500,
+    ?Throwable $previous = null
+  ) {
+    parent::__construct($message, $code, $previous);
   }
 }

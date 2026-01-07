@@ -1,25 +1,10 @@
 <?php
-// Ensure Admin
-if (!isAdmin()) {
-  header('Location: ' . Config::getBaseUrl() . 'index.php?page=dashboard');
-  exit;
-}
-
-require_once __DIR__ . '/../../autoload.php';
-
-// require_once Config::ROOT_DIR . '/models/Project.php';
-// require_once Config::ROOT_DIR . '/models/User.php';
-
-$projects = Project::getAll();
-// Get eligible Team Leads (Seniors with is_team_lead=1)
-$teamLeads = array_filter(User::getAll(), function ($u) {
-  return $u['level'] === 'Senior' && $u['is_team_lead'] == 1;
-});
+// Extract data prepared by the controller
+extract($_SESSION['admin_projects_data'] ?? []);
+unset($_SESSION['admin_projects_data']); // Clean up session after use
 ?>
 
 <h2>Manage Projects</h2>
-
-
 
 <!-- Create Project Form -->
 <div class="card mb-4">
@@ -54,7 +39,7 @@ $teamLeads = array_filter(User::getAll(), function ($u) {
         <select class="form-select" id="team_lead_id" name="team_lead_id" required>
           <option value="">Select Team Lead</option>
           <?php foreach ($teamLeads as $lead): ?>
-            <option value="<?= $lead['id'] ?>"><?= htmlspecialchars($lead['name']) ?> (<?= $lead['email'] ?>)</option>
+            <option value="<?= $lead['id'] ?>"><?= htmlspecialchars($lead['name']) ?> (<?= htmlspecialchars($lead['email']) ?>)</option>
           <?php endforeach; ?>
         </select>
       </div>

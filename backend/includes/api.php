@@ -1,6 +1,6 @@
 <?php
-// includes/api.php 
 
+// Common API response helpers for AJAX requests
 if (!function_exists('apiSuccess')) {
   function apiSuccess(mixed $data = null, string $message = 'Operation successful'): void
   {
@@ -19,6 +19,7 @@ if (!function_exists('apiSuccess')) {
   }
 }
 
+// Common API error response helper
 if (!function_exists('apiError')) {
   function apiError(
     string $errorKey,
@@ -50,6 +51,23 @@ if (!function_exists('apiError')) {
       : '';
     $page = $_POST['action'] ?? 'dashboard';
     header("Location: {$base}index.php?page={$page}");
+    exit;
+  }
+}
+
+// Common API session expired response helper
+if (!function_exists('apiSessionExpired')) {
+  function apiSessionExpired(): void
+  {
+    http_response_code(401);
+    header('Content-Type: application/json; charset=utf-8');
+
+    echo json_encode([
+      'success' => false,
+      'error'   => 'session_expired',
+      'message' => 'Your session has expired. Please log in again.'
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
     exit;
   }
 }

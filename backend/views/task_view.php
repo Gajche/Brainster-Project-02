@@ -1,39 +1,11 @@
 <?php
-// Ensure logged in
-if (!isLoggedIn()) {
-  header('Location: ' . Config::getBaseUrl() . 'index.php?page=login');
-  exit;
-}
 
-require_once __DIR__ . '/../../autoload.php';
+require_once __DIR__ . '/bootstrap/task_view_context.php';
 
-// require_once Config::ROOT_DIR . '/models/Task.php';
-// require_once Config::ROOT_DIR . '/models/Comment.php';
-// require_once Config::ROOT_DIR . '/models/User.php';
-
-$taskId = $_GET['id'] ?? 0;
-$task = Task::getById($taskId);
-$userId = $_SESSION['user_id'];
-$user = User::getById($userId);
-$userLevel = $_SESSION['user_level'] ?? null;
-
-if (!$task || (!isAdmin() && !$user->isInProject($userId, $task->getProjectId()))) {
-  $_SESSION[Config::FLASH_ERROR] = 'Task not found or access denied.';
-  header('Location: ' . Config::getBaseUrl() . 'index.php?page=dashboard');
-  exit;
-}
-
-$assigned = User::getById($task->getAssignedTo());
-$assignedName = $assigned ? htmlspecialchars($assigned->getName()) : 'Unassigned';
-
-$comments = $task->getComments();
-$canComment = $user->canCommentOnTask($taskId);
-$canChangeStatus = $user->canChangeTaskStatus($taskId);
-$isTeamLead = User::isProjectLead($userId, $task->getProjectId());
-$canAssign = isAdmin() || $isTeamLead || !empty($user->getAssignableUsers($task->getProjectId()));
-$canEditTask = $userLevel === 'Admin' || ($userLevel === 'Senior' && User::isInProject($userId, $task->getProjectId()));
 ?>
 
+
+<!-- Task Details -->
 <h2>Task: <?= htmlspecialchars($task->getTitle()) ?></h2>
 
 <div class="card mb-4">
@@ -45,76 +17,46 @@ $canEditTask = $userLevel === 'Admin' || ($userLevel === 'Senior' && User::isInP
     <p><strong>Created At:</strong> <?= htmlspecialchars($task->getCreatedAt()) ?></p>
 
     <?php if ($canChangeStatus): ?>
-
-      <form method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php">
-
+      <!-- Status Change Form - Now AJAX -->
+      <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php">
         <input type="hidden" name="action" value="change_status">
-
         <input type="hidden" name="task_id" value="<?= $taskId ?>">
-
         <div class="mb-3">
-
           <label for="status" class="form-label">Change Status</label>
-
           <select class="form-select" id="status" name="status" required>
-
             <?php foreach (Config::TASK_STATUSES as $status): ?>
-
               <option value="<?= $status ?>" <?= $task->getStatus() === $status ? 'selected' : '' ?>><?= $status ?></option>
-
             <?php endforeach; ?>
-
           </select>
-
         </div>
-
         <button type="submit" class="btn btn-primary">Update Status</button>
-
       </form>
-
     <?php endif; ?>
 
-
-
-    <?php if ($canAssign || $canEditTask): // Only show container if at least one action is available 
-    ?>
-
+    <?php if ($canAssign || $canEditTask): ?>
       <div class="mt-3 d-flex gap-2 align-items-end">
-
         <?php if ($canAssign): ?>
-
-          <form method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php" class="mb-0">
-
+          <!-- Assign Form - Now AJAX -->
+          <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php" class="mb-0">
             <input type="hidden" name="action" value="assign">
-
             <input type="hidden" name="task_id" value="<?= $taskId ?>">
-
             <div class="mb-2">
-
               <label for="assignee_id" class="form-label">Reassign To</label>
-
               <select class="form-select" id="assignee_id" name="assignee_id" required>
-
                 <option value="">Select Assignee</option>
-
                 <?php foreach (User::getById($userId)->getAssignableUsers($task->getProjectId()) as $assignee): ?>
-
                   <option value="<?= $assignee['id'] ?>" <?= $task->getAssignedTo() == $assignee['id'] ? 'selected' : '' ?>><?= htmlspecialchars($assignee['name']) ?></option>
-
                 <?php endforeach; ?>
-
               </select>
-
             </div>
-
             <button type="submit" class="btn btn-primary">Assign</button>
-
           </form>
-
         <?php endif; ?>
 
-        <?php if ($canAssign && $task->getAssignedTo()): ?>
-          <form method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php" class="mb-0">
+        <?php if ($canAssign && $task->getAssignedTo() && $userLevel !== 'Mid'): ?>
+          <!-- Unassign Form - Now AJAX -->
+          <!-- Mid users cannot unassign tasks -->
+          <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php" class="mb-0">
             <input type="hidden" name="action" value="unassign">
             <input type="hidden" name="task_id" value="<?= $taskId ?>">
             <button type="submit" class="btn btn-secondary">Unassign</button>
@@ -122,27 +64,25 @@ $canEditTask = $userLevel === 'Admin' || ($userLevel === 'Senior' && User::isInP
         <?php endif; ?>
 
         <?php if ($canEditTask): ?>
-
           <div class="d-flex gap-2 mt-3">
-
+            <!-- Edit Button (opens modal) -->
             <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editTaskModal">Edit Task</button>
 
-            <form method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php" onsubmit="return confirm('Delete this task?')">
-
+            <!-- Delete Form - Now AJAX with proper confirmation -->
+            <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php">
               <input type="hidden" name="action" value="delete">
-
               <input type="hidden" name="task_id" value="<?= $taskId ?>">
-
-              <button type="submit" class="btn btn-danger">Delete Task</button>
-
+              <button
+                type="button"
+                class="btn btn-danger"
+                data-confirm-delete
+                data-confirm-message="Are you sure you want to <strong>permanently delete</strong> the task:<br><br><strong><?= htmlspecialchars($task->getTitle()) ?></strong>?<br><br>All comments and history will be lost forever.">
+                Delete Task
+              </button>
             </form>
-
           </div>
-
         <?php endif; ?>
-
       </div>
-
     <?php endif; ?>
   </div>
 </div>
@@ -157,7 +97,8 @@ $canEditTask = $userLevel === 'Admin' || ($userLevel === 'Senior' && User::isInP
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php">
+          <!-- Edit Form - Now AJAX -->
+          <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php">
             <input type="hidden" name="action" value="update">
             <input type="hidden" name="task_id" value="<?= $taskId ?>">
             <div class="mb-3">
@@ -179,11 +120,11 @@ $canEditTask = $userLevel === 'Admin' || ($userLevel === 'Senior' && User::isInP
 <h3>Comments</h3>
 
 <?php if ($canComment): ?>
-  <!-- Add Comment Form -->
+  <!-- Add Comment Form - Now AJAX -->
   <div class="card mb-4">
     <div class="card-header">Add Comment</div>
     <div class="card-body">
-      <form id="add-comment-form" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php">
+      <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php">
         <input type="hidden" name="action" value="add_comment">
         <input type="hidden" name="task_id" value="<?= $taskId ?>">
         <div class="mb-3">
@@ -210,12 +151,20 @@ $canEditTask = $userLevel === 'Admin' || ($userLevel === 'Senior' && User::isInP
           </div>
           <p class="mb-1"><?= htmlspecialchars($comment['content']) ?></p>
           <?php if ($comment['user_id'] == $userId || $_SESSION['user_level'] === 'Admin'): ?>
-            <!-- Edit Button -->
+            <!-- Edit Button (unchanged) -->
             <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editCommentModal<?= $comment['id'] ?>">Edit</button>
-            <form method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php" class="d-inline" onsubmit="return confirm('Delete comment?');">
+
+            <!-- Delete Comment Form - Now AJAX -->
+            <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php" class="d-inline">
               <input type="hidden" name="action" value="delete_comment">
               <input type="hidden" name="comment_id" value="<?= $comment['id'] ?>">
-              <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              <button
+                type="button"
+                class="btn btn-sm btn-danger"
+                data-confirm-delete
+                data-confirm-message="Are you sure you want to <strong>permanently delete</strong> this comment?<br><br><em><?= htmlspecialchars(substr($comment['content'], 0, 100)) ?><?= strlen($comment['content']) > 100 ? '...' : '' ?></em><br><br>by <strong><?= htmlspecialchars($comment['user_name']) ?></strong>">
+                Delete
+              </button>
             </form>
           <?php endif; ?>
         </div>
@@ -229,7 +178,8 @@ $canEditTask = $userLevel === 'Admin' || ($userLevel === 'Senior' && User::isInP
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
-                <form method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php">
+                <!-- Edit Comment Form - Now AJAX -->
+                <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/task_controller.php">
                   <input type="hidden" name="action" value="edit_comment">
                   <input type="hidden" name="comment_id" value="<?= $comment['id'] ?>">
                   <div class="mb-3">
