@@ -29,7 +29,7 @@ export function initSystemHealthCheck() {
 
 // Show modal to initialize missing database
 function showSystemDbModal(
-  message = "The database is missing.\n Check if XAMMP is opened, MySQL and Apache started.\n(start MySQL, Apache and refresh browser)\n Otherwise\n Please initialize it below."
+  message = "The database is missing.\n Check if XAMMP is running, MySQL & Apache started.\n(start MySQL & Apache, then refresh browser)\n Otherwise\n Please initialize it below."
 ) {
   const modalEl = document.getElementById("systemDbModal");
   if (!modalEl) return;

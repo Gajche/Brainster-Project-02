@@ -115,6 +115,7 @@ function redirectToProject($projectId)
   exit; // Stops script execution to ensure immediate redirection.
 }
 
+// Create Project
 function handleCreate()
 {
   // Extracts and sanitizes project data from the POST request.
@@ -129,8 +130,8 @@ function handleCreate()
 
   // Validation
   // Checks for required fields: title and team_lead_id. If missing, sets error and handles response.
-  if (empty($data['title']) || empty($data['team_lead_id'])) {
-    handleResponse(false, 'Title and Team Lead required.', null, 400);
+  if (empty($data['title']) || empty($data['description']) || empty($data['requirements']) || empty($data['estimated_time']) || empty($data['deadline']) || empty($data['team_lead_id'])) {
+    handleResponse(false, 'All fields required.', null, 400);
     return;
   }
 
@@ -153,33 +154,59 @@ function handleCreate()
   }
 }
 
+
+
+// Update Project
 function handleUpdate()
 {
-  // Retrieves the project ID from the POST request.
-  $id = $_POST['id'] ?? 0;
+  // ID
+  $id = $_POST['id'] ?? null;
 
-  // Validates if a project ID was provided.
-  if (empty($id)) {
+  if (!filter_var($id, FILTER_VALIDATE_INT)) {
     handleResponse(false, 'Invalid project ID.', null, 400);
     return;
   }
 
-  // Dynamically builds the data array with only the fields present in the POST request.
-  $data = [];
-  if (isset($_POST['title']))           $data['title'] = trim($_POST['title']);
-  if (isset($_POST['description']))     $data['description'] = $_POST['description'];
-  if (isset($_POST['requirements']))    $data['requirements'] = $_POST['requirements'];
-  if (isset($_POST['estimated_time']))  $data['estimated_time'] = $_POST['estimated_time'];
-  if (isset($_POST['deadline']))        $data['deadline'] = $_POST['deadline'];
-  if (isset($_POST['team_lead_id']))    $data['team_lead_id'] = $_POST['team_lead_id'];
+  // Validation
+  $validators = [
+    'title'          => fn($v) => trim($v) !== '',
+    'description'    => fn($v) => trim($v) !== '',
+    'requirements'   => fn($v) => trim($v) !== '',
+    'estimated_time' => fn($v) =>
+    preg_match('/^\s*\d+\s+(day|days|week|weeks|month|months|year|years)\s*$/i', $v),
+    'deadline'       => fn($v) => strtotime($v),
+    'team_lead_id'   => fn($v) => filter_var($v, FILTER_VALIDATE_INT),
+  ];
 
-  // Attempts to update the project with the provided ID and data.
+  foreach ($validators as $field => $check) {
+    if (!isset($_POST[$field]) || !$check($_POST[$field])) {
+      handleResponse(false, "Invalid value for: $field", null, 400);
+      return;
+    }
+  }
+
+  // Data
+  $data = [
+    'title'          => trim($_POST['title']),
+    'description'    => trim($_POST['description']),
+    'requirements'   => trim($_POST['requirements']),
+    'estimated_time' => trim($_POST['estimated_time']),
+    'deadline'       => $_POST['deadline'],
+    'team_lead_id'   => (int) $_POST['team_lead_id'],
+  ];
+
+  // Update
   if (Project::update($id, $data)) {
     handleResponse(true, 'Project updated successfully.');
   } else {
     handleResponse(false, 'Project update failed.', null, 500);
   }
 }
+
+
+
+
+
 
 function handleDelete()
 {

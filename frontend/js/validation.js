@@ -14,6 +14,7 @@ export function validateForm(form) {
   return valid;
 }
 
+// Validates a single field; returns true if valid, false if invalid
 export function validateField(field, form = field.form) {
   if (!field || field.disabled) return true;
 

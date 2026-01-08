@@ -1,4 +1,5 @@
 // Handles Team Lead toggle
+
 export function init() {
   // Generic toggle function for level selects
   function toggleTeamLead(selectEl) {

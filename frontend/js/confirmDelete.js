@@ -1,6 +1,6 @@
 $(document).ready(function () {
   let pendingAction = null;
-// Handle click on elements with data-confirm-delete attribute
+  // Handle click on elements with data-confirm-delete attribute
   $(document).on("click", "[data-confirm-delete]", function (e) {
     e.preventDefault();
 
@@ -24,7 +24,6 @@ $(document).ready(function () {
       }
     };
 
-    
     // Dynamic Modal Customization
 
     // Default: destructive (delete)
@@ -44,7 +43,6 @@ $(document).ready(function () {
       icon = "fa-key";
       title = "Reset Password";
     }
-    // You can add more types later: 'archive', 'disable', etc.
 
     // Custom message (with fallback)
     const message =

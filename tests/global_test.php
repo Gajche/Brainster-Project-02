@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/../autoload.php';
 
 echo "<!DOCTYPE html><html><head><title>Comprehensive Test Suite</title></head><body>";

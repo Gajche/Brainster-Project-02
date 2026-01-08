@@ -1,6 +1,7 @@
 import { showToast } from "./ui.js";
 import { escapeHtml } from "./utils.js";
 import { loadModalContent } from "./taskModal.js";
+
 // Handle Add Comment form submission via AJAX
 function handleAddComment(e) {
   e.preventDefault();

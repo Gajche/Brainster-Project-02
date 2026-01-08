@@ -112,32 +112,8 @@ export function handleAjaxFormSubmit(e) {
         submitBtn.html(originalBtnHtml).prop("disabled", false);
       }, remainingTime);
     })
-    // .fail(function (jqXHR, textStatus, errorThrown) {
-    //   // Minimum spinner display time (800ms)
-    //   const minSpinnerDuration = 800;
-    //   const elapsedTime = Date.now() - startTime;
-    //   const remainingTime = Math.max(0, minSpinnerDuration - elapsedTime);
 
-    //   setTimeout(() => {
-    //     let errorMsg = "Network error. Please try again.";
-    //     if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
-    //       errorMsg = jqXHR.responseJSON.message;
-    //     }
-    //     showToast("danger", errorMsg);
-
-    //     // For errors, also reload to show Bootstrap alert
-    //     if (form.data("reload")) {
-    //       setTimeout(() => {
-    //         window.scrollTo({ top: 0, behavior: "instant" });
-    //         location.reload();
-    //       }, 3000);
-    //     }
-
-    //     // Restore button after minimum duration
-    //     submitBtn.html(originalBtnHtml).prop("disabled", false);
-    //   }, remainingTime);
-    // });
-
+    // NETWORK ERROR HANDLING
     .fail(function (jqXHR, textStatus, errorThrown) {
       // Minimum spinner display time (800ms)
       const minSpinnerDuration = 800;

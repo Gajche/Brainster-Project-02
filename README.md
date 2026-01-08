@@ -6,6 +6,7 @@
 [![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=flat-square&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
+[![Font Awesome](https://img.shields.io/badge/Font%20Awesome-528DD7?style=flat-square&logo=fontawesome&logoColor=white)](https://fontawesome.com/)
 [![jQuery](https://img.shields.io/badge/jQuery-0769AD?style=flat-square&logo=jquery&logoColor=white)](https://jquery.com/)
 [![AJAX](https://img.shields.io/badge/AJAX-007ACC?style=flat-square&logoColor=white)](https://api.jquery.com/jquery.ajax/)
 [![SortableJS](https://img.shields.io/badge/SortableJS-2C3E50?style=flat-square&logo=javascript&logoColor=white)](https://sortablejs.github.io/Sortable/)
@@ -37,7 +38,7 @@ The system is divided into a regular application for users and an Admin panel fo
 
 - **Backend**: PHP (OOP) for server logic, controllers, and models.
 - **Database**: MySQL for data storage (users, projects, tasks, comments).
-- **Frontend**: HTML/CSS with Bootstrap for styling; JavaScript/jQuery/toastr for interactivity (AJAX, drag-drop via Sortable.js, toastr for notifications).
+- **Frontend**: HTML/CSS with Bootstrap and Font Awesome for styling and icons; JavaScript/jQuery/toastr for interactivity (AJAX, drag-drop via Sortable.js, toastr for notifications).
 - **Security**: Prepared statements for SQL; password hashing; session-based auth.
 
 ## Technologies Used
@@ -46,6 +47,7 @@ The system is divided into a regular application for users and an Admin panel fo
 - **MySQL** - Relational database for data storage
 - **JavaScript** - Client-side interactivity and dynamic features
 - **Bootstrap** - Responsive front-end framework for fast UI development
+- **Font Awesome** - Icon library for scalable vector icons and UI elements
 - **jQuery** - Simplified DOM manipulation and AJAX handling
 - **SortableJS** - Drag-and-drop sorting for tasks and UI elements
 - **HTML5** - Semantic structure and modern web standards
@@ -136,15 +138,24 @@ mysql -u root < db_sql/create_db.sql
 - Senior/Mid/Junior: Interact with tasks/comments per role permissions.
 - Test RBAC by logging in as different roles.
 
-### ER Diagram
+### Database Diagrams
 
-- The following diagram illustrates the entity relationships between users, projects, tasks, and comments.
+<details>
+<summary>Click to expand database diagrams (ER Diagram & phpMyAdmin Designer view)</summary>
+
+#### ER Diagram
+
+The following diagram illustrates the entity relationships between users, projects, tasks, and comments.
 
 ![ER Diagram](docs/er-diagram.svg)
 
-### Designer view (phpMyAdmin)
+#### Designer view (phpMyAdmin)
+
+Visual representation of the database tables and relationships in phpMyAdmin's Designer tool.
 
 ![Designer view](docs/designer_view_tables.png)
+
+</details>
 
 ### Development Notes
 
@@ -154,8 +165,11 @@ mysql -u root < db_sql/create_db.sql
 
 ### Project Structure
 
-```
-ProjectRootFolder/
+<details>
+<summary>Click to expand project structure (clean MVC-like organization)</summary>
+
+<pre>
+/
 ├── backend
 │   ├── api
 │   │   └── system_health.php
@@ -167,7 +181,7 @@ ProjectRootFolder/
 │   │   ├── project_controller.php
 │   │   ├── project_view_controller.php
 │   │   ├── task_controller.php
-│   │   ├── user_controller.php
+│   │   └── user_controller.php
 │   ├── includes
 │   │   ├── classes
 │   │   │   ├── Config.php
@@ -184,7 +198,7 @@ ProjectRootFolder/
 │   │   ├── Database.php
 │   │   ├── Project.php
 │   │   ├── Task.php
-│   │   ├── User.php
+│   │   └── User.php
 │   └── views
 │       ├── bootstrap
 │       │   └── task_view_context.php
@@ -218,7 +232,8 @@ ProjectRootFolder/
 │   ├── er-diagram.drawio
 │   ├── er-diagram.png
 │   ├── er-diagram.svg
-│   └── nikolovski_project_management.svg
+│   ├── nikolovski_project_management.svg
+│   └── Specification.pdf
 ├── frontend
 │   ├── css
 │   │   ├── custom.css
@@ -257,20 +272,38 @@ ProjectRootFolder/
 │           ├── Sortable.min.js
 │           ├── toastr.js.map
 │           └── toastr.min.js
-├── password_log
-│   ├── admin_password_log.php
-│   └── user_passwords.txt
+├── screenshot
+│   ├── admin_panel.png
+│   ├── admin_projects_delete_modal.png
+│   ├── admin_projects_edit_modal.png
+│   ├── admin_projects.png
+│   ├── admin_users_1.png
+│   ├── admin_users_delete_user_modal.png
+│   ├── admin_users_edit_modal.png
+│   ├── admin_users_reset_password_modal.png
+│   ├── admin_users.png
+│   ├── change_password.png
+│   ├── dashboard.png
+│   ├── initial_setup.png
+│   ├── login.png
+│   ├── project_view_task_modal_edit_comment.png
+│   ├── project_view_task_modal_edit_task.png
+│   ├── project_view_task_modal.png
+│   ├── project_view1.png
+│   ├── project_view2.png
+│   ├── project_view3.png
+│   └── register.png
 ├── tests
 │   ├── global_test.php
-│   └── permission_test.php
+│   ├── permission_test.php
+│   └── test_db.php
 ├── .gitignore
 ├── autoload.php
-├── credentials.txt
 ├── index.php
-├── README.md
-├── Specification.pdf
-└── test_db.php
-```
+└── README.md
+</pre>
+
+</details>
 
 ## Live Test Deployment
 
@@ -283,6 +316,106 @@ A temporary test deployment of the application is available for demonstration pu
 > Data may be reset at any time, performance may vary, and the environment is not production-hardened.
 
 You can use the default credentials listed to explore role-based access, project management flows, and task handling across different user roles.
+
+## Screenshots
+
+<details>
+<summary>Click to expand screenshots (20 images showcasing the application)</summary>
+
+<table width="100%">
+  <tr>
+    <td align="center" valign="top">
+      <img src="screenshot/initial_setup.png" alt="Initial database setup modal" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Initial database setup modal</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/login.png" alt="Login page" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Login page</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/register.png" alt="Registration page" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Registration page</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/dashboard.png" alt="User dashboard" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>User dashboard</em>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <img src="screenshot/change_password.png" alt="Change password page" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Change password page</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/admin_panel.png" alt="Admin panel overview" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Admin panel overview</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/admin_users.png" alt="Admin users management" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Admin users management</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/admin_users_1.png" alt="Admin users detailed view" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Admin users detailed view</em>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <img src="screenshot/admin_users_edit_modal.png" alt="Edit user modal" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Edit user modal</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/admin_users_delete_user_modal.png" alt="Delete user confirmation" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Delete user confirmation</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/admin_users_reset_password_modal.png" alt="Reset password modal" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Reset password modal</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/admin_projects.png" alt="Admin projects management" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Admin projects management</em>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <img src="screenshot/admin_projects_edit_modal.png" alt="Edit project modal" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Edit project modal</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/admin_projects_delete_modal.png" alt="Delete project confirmation" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Delete project confirmation</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/project_view1.png" alt="Project view - overview" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Project view - overview</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/project_view2.png" alt="Project view - Kanban board" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Project view - Kanban board</em>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <img src="screenshot/project_view3.png" alt="Project view - team members" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Project view - team members</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/project_view_task_modal.png" alt="Task modal" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Task modal</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/project_view_task_modal_edit_task.png" alt="Edit task modal" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Edit task modal</em>
+    </td>
+    <td align="center" valign="top">
+      <img src="screenshot/project_view_task_modal_edit_comment.png" alt="Edit comment modal" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Edit comment modal</em>
+    </td>
+  </tr>
+</table>
+
+</details>
 
 ### Contributing
 

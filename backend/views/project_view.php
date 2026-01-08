@@ -31,7 +31,7 @@ unset($_SESSION['project_view_data']);
       </span>
     </p>
     <?php if ($isTeamLead && $project->getStatus() === 'Active'): ?>
-      <form method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/project_controller.php">
+      <form class="ajax-form d-inline" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/project_controller.php">
         <input type="hidden" name="action" value="mark_done">
         <input type="hidden" name="id" value="<?= $projectId ?>">
         <button type="submit" class="btn btn-success">

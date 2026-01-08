@@ -1,4 +1,5 @@
 import { showToast } from "./ui.js";
+
 // Handle Login form submission via AJAX
 function handleLogin(e) {
   e.preventDefault();

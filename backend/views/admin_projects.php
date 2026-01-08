@@ -19,20 +19,20 @@ unset($_SESSION['admin_projects_data']); // Clean up session after use
         </div>
         <div class="col-md-4 mb-3">
           <label for="estimated_time" class="form-label">Estimated Time</label>
-          <input type="text" class="form-control" id="estimated_time" name="estimated_time">
+          <input type="text" class="form-control" id="estimated_time" name="estimated_time" required>
         </div>
         <div class="col-md-4 mb-3">
           <label for="deadline" class="form-label">Deadline</label>
-          <input type="date" class="form-control" id="deadline" name="deadline">
+          <input type="date" class="form-control" id="deadline" name="deadline" required>
         </div>
       </div>
       <div class="mb-3">
         <label for="description" class="form-label">Description</label>
-        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
       </div>
       <div class="mb-3">
         <label for="requirements" class="form-label">Requirements</label>
-        <textarea class="form-control" id="requirements" name="requirements" rows="3"></textarea>
+        <textarea class="form-control" id="requirements" name="requirements" rows="3" required></textarea>
       </div>
       <div class="mb-3">
         <label for="team_lead_id" class="form-label">Assign to Team Lead</label>
@@ -118,20 +118,20 @@ unset($_SESSION['admin_projects_data']); // Clean up session after use
                   </div>
                   <div class="col-md-4 mb-3">
                     <label for="estimated_time<?= $project->getId() ?>" class="form-label">Estimated Time</label>
-                    <input type="text" class="form-control" id="estimated_time<?= $project->getId() ?>" name="estimated_time" value="<?= htmlspecialchars($project->getEstimatedTime()) ?>">
+                    <input type="text" class="form-control" id="estimated_time<?= $project->getId() ?>" name="estimated_time" value="<?= htmlspecialchars($project->getEstimatedTime()) ?>" required>
                   </div>
                   <div class="col-md-4 mb-3">
                     <label for="deadline<?= $project->getId() ?>" class="form-label">Deadline</label>
-                    <input type="date" class="form-control" id="deadline<?= $project->getId() ?>" name="deadline" value="<?= htmlspecialchars($project->getDeadline()) ?>">
+                    <input type="date" class="form-control" id="deadline<?= $project->getId() ?>" name="deadline" value="<?= htmlspecialchars($project->getDeadline()) ?>" required>
                   </div>
                 </div>
                 <div class="mb-3">
                   <label for="description<?= $project->getId() ?>" class="form-label">Description</label>
-                  <textarea class="form-control" id="description<?= $project->getId() ?>" name="description" rows="3"><?= htmlspecialchars($project->getDescription()) ?></textarea>
+                  <textarea class="form-control" id="description<?= $project->getId() ?>" name="description" rows="3" required><?= htmlspecialchars($project->getDescription()) ?></textarea>
                 </div>
                 <div class="mb-3">
                   <label for="requirements<?= $project->getId() ?>" class="form-label">Requirements</label>
-                  <textarea class="form-control" id="requirements<?= $project->getId() ?>" name="requirements" rows="3"><?= htmlspecialchars($project->getRequirements()) ?></textarea>
+                  <textarea class="form-control" id="requirements<?= $project->getId() ?>" name="requirements" rows="3" required><?= htmlspecialchars($project->getRequirements()) ?></textarea>
                 </div>
                 <div class="mb-3">
                   <label for="team_lead_id<?= $project->getId() ?>" class="form-label">Team Lead</label>

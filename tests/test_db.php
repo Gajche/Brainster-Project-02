@@ -1,9 +1,9 @@
 <?php
 
-// test_db.php
+require_once __DIR__ . '/../autoload.php';
 
-require_once __DIR__ . '../backend/includes/classes/Config.php';
-require_once Config::BACKEND_DIR . '/models/Database.php';
+// require_once __DIR__ . '../../backend/includes/classes/Config.php';
+// require_once Config::BACKEND_DIR . '/models/Database.php';
 
 try {
   $db = Database::getInstance();
@@ -15,6 +15,6 @@ try {
   } else {
     echo "Connection test failed.";
   }
-} catch (PDOException $e) {
+} catch (DatabaseException $e) {
   echo "Connection error: " . $e->getMessage();
 }

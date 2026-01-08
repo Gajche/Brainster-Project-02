@@ -2,10 +2,10 @@
 // Front Controller: routes requests, loads controllers and views
 
 // Ignore favicon requests
-if (isset($_SERVER['REQUEST_URI']) && $_SERVER['REQUEST_URI'] === '/favicon.ico') {
-  http_response_code(204);
-  exit;
-}
+// if (isset($_SERVER['REQUEST_URI']) && $_SERVER['REQUEST_URI'] === '/favicon.ico') {
+//   http_response_code(204);
+//   exit;
+// }
 
 require_once __DIR__ . '/autoload.php';
 
@@ -62,10 +62,12 @@ $viewPath = Config::BACKEND_DIR . "/views/{$page}.php";
 
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="frontend/css/custom.css">
   <link rel="stylesheet" href="frontend/vendor/css/toastr.min.css">
   <link rel="stylesheet" href="frontend/css/kanban.css">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23007bff%22/%3E%3Ctext x=%2250%22 y=%2250%22 font-size=%2238%22 font-weight=%22bold%22 font-family=%22Arial, sans-serif%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22%23ffffff%22%3EPMA%3C/text%3E%3C/svg%3E">
 
 </head>
 
