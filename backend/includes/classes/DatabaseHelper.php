@@ -105,7 +105,7 @@ class DatabaseHelper
   {
     // Set flash error message (only if not already set to avoid overwriting)
     if (!isset($_SESSION[Config::FLASH_ERROR])) {
-      $_SESSION[Config::FLASH_ERROR] = "Database connection failed. Please try again later.";
+      $_SESSION[Config::FLASH_ERROR] = "Database error: Connection failed or tables are missing.";
     }
 
     // Log the error with context

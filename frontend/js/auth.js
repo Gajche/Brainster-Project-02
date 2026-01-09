@@ -35,7 +35,7 @@ function handleLogin(e) {
       }
     },
     error: function (jqXHR) {
-      let msg = "An unknown error occurred.";
+      let msg = "An unknown error occurred. (Contact Administrator)";
       if (jqXHR.responseJSON?.message) {
         msg = jqXHR.responseJSON.message;
       }

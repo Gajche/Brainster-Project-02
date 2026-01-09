@@ -25,7 +25,9 @@ export function loadModalContent(url, data, modalTitle, modalBody) {
     })
     .fail(function () {
       modalTitle.text("Error");
-      modalBody.html('<div class="alert alert-danger">Network error</div>');
+      modalBody.html(
+        '<div class="alert alert-danger">Network error. Database connection failed. Ensure XAMPP is running and all tables exist.</div>'
+      );
       showToast("danger", "Connection failed");
     });
 }

@@ -209,7 +209,7 @@ unset($_SESSION['admin_users_data']); // Clean up session after use
 
           <!-- DELETE Button - Hidden for Admin users and self -->
           <?php if (!$isAdminUser): ?>
-            <form method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/user_controller.php" class="d-inline">
+            <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/user_controller.php">
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="id" value="<?= $user['id'] ?>">
               <button

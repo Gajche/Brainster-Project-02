@@ -1,11 +1,8 @@
 <?php
 // Front Controller: routes requests, loads controllers and views
 
-// Ignore favicon requests
-// if (isset($_SERVER['REQUEST_URI']) && $_SERVER['REQUEST_URI'] === '/favicon.ico') {
-//   http_response_code(204);
-//   exit;
-// }
+// Start output buffering to prevent "headers already sent" errors
+ob_start();
 
 require_once __DIR__ . '/autoload.php';
 
@@ -99,13 +96,26 @@ $viewPath = Config::BACKEND_DIR . "/views/{$page}.php";
       try {
         require_once $viewPath;
       } catch (DatabaseException $e) {
-        http_response_code(500);
+        // Only set HTTP code if headers not sent
+        if (!headers_sent()) {
+          http_response_code(500);
+        }
+
         echo '<div class="alert alert-danger">';
+        echo '<strong><i class="fas fa-database me-2"></i>Database Connection Failed</strong><br>';
         echo htmlspecialchars($e->getMessage());
+        echo '<div class="mt-3">';
+        echo '<small class="text-muted">';
+        echo '<strong><i class="fas fa-tools me-1"></i>Troubleshooting:</strong><br>';
+        echo '• Ensure XAMPP is running (MySQL & Apache started)<br>';
+        echo '• Check <a href="http://localhost/phpmyadmin" target="_blank" class="text-decoration-none">';
+        echo '<i class="fas fa-external-link-alt me-1"></i>phpMyAdmin</a> to verify the database and tables exist<br>';
+        echo '• If tables are missing or deleted, reinitialize the database<br>';
+        echo '• Refresh your browser after fixing';
+        echo '</small>';
+        echo '</div>';
         echo '</div>';
       }
-    } else {
-      echo '<div class="alert alert-warning">Page not found.</div>';
     }
     ?>
 
@@ -127,6 +137,8 @@ $viewPath = Config::BACKEND_DIR . "/views/{$page}.php";
   <!-- System DB Modal -->
   <?php require_once Config::BACKEND_DIR . '/views/partials/system_db_modal.php'; ?>
 
+  <?php ob_end_flush(); // Flush output buffer 
+  ?>
 </body>
 
 </html>

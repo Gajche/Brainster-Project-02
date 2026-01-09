@@ -138,6 +138,14 @@ mysql -u root < db_sql/create_db.sql
 - Senior/Mid/Junior: Interact with tasks/comments per role permissions.
 - Test RBAC by logging in as different roles.
 
+## User Uniqueness Design
+
+The application uses **email** as the unique identifier for authentication and user lookup.  
+Uniqueness of email is enforced to ensure reliable login, authorization, and password recovery.
+
+The **name** field is intentionally **not unique** and is used only as a display attribute.  
+This reflects real-world systems where user identity is managed via unique credentials (email / user ID), not human-readable names.
+
 ### Database Diagrams
 
 <details>
@@ -391,14 +399,14 @@ You can use the default credentials listed to explore role-based access, project
       <br><em>Project view - overview</em>
     </td>
     <td align="center" valign="top">
-      <img src="screenshot/project_view2.png" alt="Project view - Kanban board" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
-      <br><em>Project view - Kanban board</em>
+      <img src="screenshot/project_view2.png" alt="Project view - team members" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Project view - team members</em>
     </td>
   </tr>
   <tr>
     <td align="center" valign="top">
-      <img src="screenshot/project_view3.png" alt="Project view - team members" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
-      <br><em>Project view - team members</em>
+      <img src="screenshot/project_view3.png" alt="Project view - Kanban board" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
+      <br><em>Project view - Kanban board</em>
     </td>
     <td align="center" valign="top">
       <img src="screenshot/project_view_task_modal.png" alt="Task modal" style="width: 100%; max-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" />
@@ -423,4 +431,4 @@ You can use the default credentials listed to explore role-based access, project
 
 ## 👥 Authors
 
-- **Nikolovski Dejan** - [@Dejan.Nikolovski-FS21](https://git.brainster.co/Dejan.Nikolovski-FS21/brainsterchallenges_nikolovskidejan_fs21)
+- **Nikolovski Dejan** - [@Dejan.Nikolovski-FS21](https://git.brainster.co/Dejan.Nikolovski-FS21)

@@ -29,7 +29,7 @@ export function initSystemHealthCheck() {
 
 // Show modal to initialize missing database
 function showSystemDbModal(
-  message = "The database is missing.\n Check if XAMMP is running, MySQL & Apache started.\n(start MySQL & Apache, then refresh browser)\n Otherwise\n Please initialize it below."
+  message = "The database is missing.\n\nEnsure XAMPP is running with MySQL & Apache started.\n(Start MySQL & Apache, then refresh browser)\n\nOtherwise, please initialize the database below."
 ) {
   const modalEl = document.getElementById("systemDbModal");
   if (!modalEl) return;
@@ -42,36 +42,49 @@ function showSystemDbModal(
   });
 
   modal.show();
-
-  document
-    .getElementById("systemDbInitBtn")
-    .addEventListener("click", runDatabaseInit, { once: true });
 }
+
+// Handle database initialization button click
+$(document).on("click", "#systemDbInitBtn", function (e) {
+  e.preventDefault();
+  e.stopPropagation();
+  if ($(this).prop("disabled")) return; // Prevent double-clicks
+  runDatabaseInit();
+});
 
 // Run database initialization via AJAX
 function runDatabaseInit() {
   const btn = document.getElementById("systemDbInitBtn");
   btn.disabled = true;
   btn.innerHTML =
-    '<span class="spinner-border spinner-border-sm me-2"></span>Setting up...';
+    '<span class="spinner-border spinner-border-sm me-2"></span>Initializing...';
 
   $.ajax({
-    url: "/database/create_db.php",
+    url: "database/create_db.php",
     method: "POST",
     dataType: "json",
+    timeout: 30000, // Prevent hanging if server unresponsive
   })
     .done((response) => {
       showToast(
         "success",
         response?.message || "Database initialized successfully!"
       );
+      btn.innerHTML =
+        '<span class="spinner-border spinner-border-sm me-2"></span>Success! Reloading...';
       setTimeout(() => location.reload(), 3000);
     })
     .fail((jqXHR) => {
-      showToast(
-        "error",
-        jqXHR.responseJSON?.message || "Database initialization failed."
-      );
+      let message = "Database initialization failed.";
+      if (jqXHR.responseJSON?.message) {
+        message = jqXHR.responseJSON.message;
+      } else if (jqXHR.status === 0 || jqXHR.readyState === 0) {
+        message =
+          "Cannot connect to the database. Please ensure MySQL is running in XAMPP and try again.";
+      }
+
+      showToast("error", message);
+
       btn.disabled = false;
       btn.innerHTML = "Retry Setup";
     });

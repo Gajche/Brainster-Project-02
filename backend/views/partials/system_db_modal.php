@@ -5,6 +5,7 @@
         <h5 class="modal-title">
           <i class="fas fa-database me-2"></i>System Setup Required
         </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
       <div class="modal-body">
@@ -17,12 +18,8 @@
       </div>
 
       <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-danger"
-          id="systemDbInitBtn">
-          Initialize Database
-        </button>
+        <button type="button" class="btn btn-danger" id="systemDbInitBtn">Initialize Database</button>
+        <button type="button" class="btn btn-primary" onclick="location.reload()">Refresh Page</button>
       </div>
     </div>
   </div>
