@@ -73,10 +73,46 @@ class Comment
     }
   }
 
+  // Create system comment (bypasses permission check)
+  public static function createSystemComment($taskId, $userId, $content)
+  {
+    try {
+      $db = Database::getInstance();
+      $stmt = $db->prepare('INSERT INTO comments (task_id, user_id, content) VALUES (?, ?, ?)');
+
+      if ($stmt->execute([$taskId, $userId, $content])) {
+        return $db->lastInsertId();
+      }
+      return false;
+    } catch (PDOException $e) {
+      error_log('[COMMENT createSystemComment] ' . $e->getMessage());
+      throw new DatabaseException();
+    }
+  }
+
+  // Check if comment is a system-generated status change comment
+  public function isSystem()
+  {
+    // Pattern: [Username] changed the status from X to Y
+    return preg_match('/^\[.+?\] changed the status from .+ to .+$/', $this->content) === 1;
+  }
+
+  // Static method to check if content is a system comment
+  public static function isSystemContent($content)
+  {
+    return preg_match('/^\[.+?\] changed the status from .+ to .+$/', $content) === 1;
+  }
+
   // Update comment (owner only, mark as edited)
+  // Prevent editing system comments
   public function update($content, $userId)
   {
     try {
+      // System comments cannot be edited
+      if ($this->isSystem()) {
+        return false;
+      }
+
       // User::getById may throw DatabaseException - that's OK.
       if ($this->user_id != $userId && User::getById($userId)->getLevel() !== 'Admin') {
         return false;
@@ -92,12 +128,18 @@ class Comment
   }
 
   // Delete comment (owner or Admin)
+  // Prevent deleting system comments
   public static function delete($id, $userId)
   {
     try {
       // This may throw DatabaseException if comments table is missing
       $comment = self::getById($id);
       if (!$comment) return false;
+
+      // System comments cannot be deleted
+      if ($comment->isSystem()) {
+        return false;
+      }
 
       // User::getById may throw DatabaseException if users table is missing
       $user = User::getById($userId);
@@ -128,7 +170,8 @@ class Comment
         'user_name' => $user ? $user->getName() : 'Unknown',
         'content' => $this->content,
         'created_at' => $this->created_at,
-        'edited' => $this->edited
+        'edited' => $this->edited,
+        'is_system' => $this->isSystem() // system flag
       ];
     } catch (DatabaseException $e) {
       // If we can't get user info, return basic comment info without user details
@@ -141,6 +184,7 @@ class Comment
         'content' => $this->content,
         'created_at' => $this->created_at,
         'edited' => $this->edited,
+        'is_system' => $this->isSystem(), // NEW
         'error' => 'Unable to load user information'
       ];
     }

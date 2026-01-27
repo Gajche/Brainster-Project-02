@@ -43,62 +43,167 @@ unset($_SESSION['project_view_data']);
 </div>
 
 <!-- Team Members Table -->
-<h3>Team Members</h3>
-<table class="table table-striped mb-4">
-  <thead>
-    <tr>
-      <th class="bg-dark text-white">Name</th>
-      <th class="bg-dark text-white">Level</th>
-      <?php if ($isTeamLead): ?>
-        <th class="bg-dark text-white">Actions</th>
-      <?php endif; ?>
-    </tr>
-  </thead>
-  <tbody>
-    <?php foreach ($team as $member): ?>
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <h3 class="mb-0">Team Members</h3>
+  <?php if ($isTeamLead): ?>
+    <div>
+      <button type="button" class="btn btn-sm btn-outline-primary" id="select-all-remove">
+        <i class="fas fa-check-double me-1"></i> Select All
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect-all-remove">
+        <i class="fas fa-times me-1"></i> Clear
+      </button>
+    </div>
+  <?php endif; ?>
+</div>
+
+<form id="remove-members-form" class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/project_controller.php">
+  <input type="hidden" name="action" value="remove_members">
+  <input type="hidden" name="project_id" value="<?= $projectId ?>">
+
+  <table class="table table-striped mb-4">
+    <thead>
       <tr>
-        <td><?= htmlspecialchars($member['name']) ?></td>
-        <td><?= htmlspecialchars($member['level']) ?></td>
         <?php if ($isTeamLead): ?>
+          <th class="bg-dark text-white" style="width: 50px;">
+            <input type="checkbox" id="select-all-checkbox-header" class="form-check-input" title="Select all removable members">
+          </th>
+        <?php endif; ?>
+        <th class="bg-dark text-white">Name</th>
+        <th class="bg-dark text-white">Level</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php foreach ($team as $member): ?>
+        <tr>
+          <?php if ($isTeamLead): ?>
+            <td>
+              <?php if ($member['id'] != $project->getTeamLeadId()): ?>
+                <input
+                  type="checkbox"
+                  class="form-check-input remove-member-checkbox"
+                  name="member_ids[]"
+                  value="<?= $member['id'] ?>"
+                  data-member-name="<?= htmlspecialchars($member['name']) ?>">
+              <?php else: ?>
+                <i class="fas fa-crown text-warning" title="Team Lead cannot be removed"></i>
+              <?php endif; ?>
+            </td>
+          <?php endif; ?>
           <td>
-            <?php if ($member['id'] != $project->getTeamLeadId()): ?>
-              <form class="ajax-form d-inline" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/project_controller.php">
-                <input type="hidden" name="action" value="remove_member">
-                <input type="hidden" name="project_id" value="<?= $projectId ?>">
-                <input type="hidden" name="member_id" value="<?= $member['id'] ?>">
-                <button type="button" class="btn btn-sm btn-danger" data-confirm-delete data-confirm-message="Are you sure you want to remove <strong><?= htmlspecialchars($member['name']) ?></strong> from this project?<br><br>They will lose access to all tasks and project data.">
-                  <i class="fas fa-user-times me-1"></i>Remove
-                </button>
-              </form>
+            <?= htmlspecialchars($member['name']) ?>
+            <?php if ($member['id'] == $project->getTeamLeadId()): ?>
+              <span class="badge bg-warning text-dark ms-2">Team Lead</span>
             <?php endif; ?>
           </td>
-        <?php endif; ?>
-      </tr>
-    <?php endforeach; ?>
-  </tbody>
-</table>
+          <td><?= htmlspecialchars($member['level']) ?></td>
+        </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
+
+  <!-- Remove button at the bottom of the form (aligned right) -->
+  <?php if ($isTeamLead): ?>
+    <div class="text-end">
+      <button
+        type="submit"
+        class="btn btn-danger mb-3"
+        id="remove-selected-btn"
+        data-confirm-delete
+        data-confirm-message="Please select members to remove."
+        disabled>
+        <i class="fas fa-user-times me-1"></i>
+        <span id="remove-selected-text">Remove Selected (0)</span>
+      </button>
+    </div>
+  <?php endif; ?>
+</form>
 
 <!-- Add Team Member Form -->
 <?php if ($isTeamLead): ?>
   <div class="card mb-4 shadow">
-    <div class="card-header fw-bold bg-dark text-white">Add Team Member</div>
+    <div class="card-header fw-bold bg-dark text-white">
+      Add Team Members
+      <span class="badge bg-info float-end" id="selected-count">0 selected</span>
+    </div>
     <div class="card-body">
-      <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/project_controller.php">
-        <input type="hidden" name="action" value="add_member">
-        <input type="hidden" name="project_id" value="<?= $projectId ?>">
-        <div class="mb-3">
-          <label for="member_id" class="form-label">Select User</label>
-          <select class="form-select" id="member_id" name="member_id" required>
-            <option value="">Choose...</option>
-            <?php foreach ($availableMembers as $user): ?>
-              <option value="<?= $user['id'] ?>"><?= htmlspecialchars($user['name']) ?> (<?= $user['level'] ?>)</option>
-            <?php endforeach; ?>
-          </select>
+      <?php if (empty($availableMembers)): ?>
+        <div class="alert alert-info mb-0">
+          <i class="fas fa-info-circle me-2"></i>
+          All available users are already on this team.
         </div>
-        <button type="submit" class="btn btn-primary">
-          <i class="fas fa-user-plus me-2"></i> Add Member
-        </button>
-      </form>
+      <?php else: ?>
+        <form class="ajax-form" data-reload="true" method="POST" action="<?= Config::getBaseUrl() ?>backend/controllers/project_controller.php" id="add-members-form">
+          <input type="hidden" name="action" value="add_members">
+          <input type="hidden" name="project_id" value="<?= $projectId ?>">
+
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label mb-0">Select Users to Add</label>
+              <div>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="select-all-members">
+                  <i class="fas fa-check-double me-1"></i> Select All
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect-all-members">
+                  <i class="fas fa-times me-1"></i> Clear
+                </button>
+              </div>
+            </div>
+
+            <div class="border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto;">
+              <?php
+              // Group users by level for better organization
+              $usersByLevel = [
+                'Senior' => [],
+                'Mid' => [],
+                'Junior' => []
+              ];
+
+              foreach ($availableMembers as $user) {
+                $level = $user['level'] ?? 'Junior';
+                if (isset($usersByLevel[$level])) {
+                  $usersByLevel[$level][] = $user;
+                }
+              }
+
+              // Display users grouped by level
+              foreach ($usersByLevel as $level => $users):
+                if (empty($users)) continue;
+              ?>
+                <div class="mb-3">
+                  <h6 class="text-muted border-bottom pb-1">
+                    <i class="fas fa-users me-1"></i> <?= $level ?> Developers (<?= count($users) ?>)
+                  </h6>
+                  <?php foreach ($users as $user): ?>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input member-checkbox"
+                        type="checkbox"
+                        name="member_ids[]"
+                        value="<?= $user['id'] ?>"
+                        id="member-<?= $user['id'] ?>">
+                      <label class="form-check-label" for="member-<?= $user['id'] ?>">
+                        <?= htmlspecialchars($user['name']) ?>
+                        <span class="badge bg-secondary ms-1"><?= $user['level'] ?></span>
+                      </label>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              <?php endforeach; ?>
+            </div>
+
+            <small class="text-muted">
+              <i class="fas fa-info-circle me-1"></i>
+              Tip: Use Select All to quickly add multiple team members
+            </small>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="add-members-btn" disabled>
+            <i class="fas fa-user-plus me-2"></i>
+            <span id="add-members-text">Add Selected Members</span>
+          </button>
+        </form>
+      <?php endif; ?>
     </div>
   </div>
 <?php endif; ?>
@@ -126,7 +231,10 @@ unset($_SESSION['project_view_data']);
           <select class="form-select" id="assignee_id" name="assignee_id">
             <option value="">Unassigned</option>
             <?php foreach ($assignableUsers as $assignee): ?>
-              <option value="<?= $assignee['id'] ?>"><?= htmlspecialchars($assignee['name']) ?> (<?= htmlspecialchars($assignee['level']) ?>)</option>
+              <option value="<?= $assignee['id'] ?>">
+                <?php if ($assignee['id'] == $userId): ?>👤 YOU - <?php endif; ?>
+              <?= htmlspecialchars($assignee['name']) ?> (<?= htmlspecialchars($assignee['level']) ?>)
+              </option>
             <?php endforeach; ?>
           </select>
         </div>

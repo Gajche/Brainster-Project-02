@@ -31,13 +31,24 @@ function handleAddComment(e) {
         }
         // Append new comment to the list
         const comment = response.data.comment;
+
+        // Check if it's a system comment (status change comments are auto-generated)
+        const isSystem = comment.is_system || false;
+        const systemIcon = isSystem
+          ? '<i class="fas fa-robot text-primary me-1" title="System-generated status change"></i>'
+          : "";
+        const bgClass = isSystem
+          ? "bg-light border-primary border-opacity-25"
+          : "";
+        const textClass = isSystem ? "fst-italic text-muted" : "";
+
         const newCommentHtml = `
-          <div class="list-group-item">
+          <div class="list-group-item ${bgClass}">
             <div class="d-flex w-100 justify-content-between">
-              <h5 class="mb-1">${escapeHtml(comment.user_name)}</h5>
+              <h5 class="mb-1">${systemIcon}<strong>${escapeHtml(comment.user_name)}</strong></h5>
               <small>${escapeHtml(comment.created_at)}</small>
             </div>
-            <p class="mb-1">${escapeHtml(comment.content)}</p>
+            <p class="mb-1 ${textClass}"><em>${escapeHtml(comment.content)}</em></p>
           </div>
         `;
 
@@ -55,6 +66,7 @@ function handleAddComment(e) {
     },
   });
 }
+
 // Handle Edit Comment button click
 function handleEditCommentClick(e) {
   const commentId = $(e.currentTarget).data("comment-id");
@@ -69,9 +81,10 @@ function handleEditCommentClick(e) {
     "backend/controllers/task_controller.php",
     { action: "get_comment_edit_form", comment_id: commentId },
     modalTitle,
-    modalBody
+    modalBody,
   );
 }
+
 // Initialize comment functionality
 export function initComments() {
   $("#add-comment-form").on("submit", handleAddComment);

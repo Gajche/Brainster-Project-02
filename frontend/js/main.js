@@ -4,6 +4,7 @@ import {
   initKanban,
   initTaskModals,
   initComments,
+  initProjectMembers,
 } from "./modules.js";
 import { handleAjaxFormSubmit } from "./api.js";
 import { validateForm, validateField } from "./validation.js";
@@ -48,9 +49,13 @@ $(function () {
   initSystemHealthCheck();
 
   // Init core modules
-  [initAuth, initKanban, initTaskModals, initComments].forEach((init) =>
-    init()
-  );
+  [
+    initAuth,
+    initKanban,
+    initTaskModals,
+    initComments,
+    initProjectMembers, // Initialize project members multi-select
+  ].forEach((init) => init());
 
   loadPageSpecificModules().catch(console.error);
 

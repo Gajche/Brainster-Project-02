@@ -175,8 +175,9 @@ class Task
 
       if ($exec) {
         $content = '[' . $user->getName() . '] changed the status from ' . $oldStatus . ' to ' . $newStatus;
-        // Comment::create() might throw DatabaseException 
-        Comment::create(['task_id' => $this->id, 'user_id' => $userId, 'content' => $content]);
+        // Use createSystemComment instead of create
+        // This bypasses permission checks and marks it as a system comment
+        Comment::createSystemComment($this->id, $userId, $content);
         return true;
       }
       return false;

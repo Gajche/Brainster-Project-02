@@ -47,8 +47,16 @@ try {
       handleAddMember($userId);
       break;
 
+    case 'add_members': // NEW: Handle multiple members
+      handleAddMembers($userId);
+      break;
+
     case 'remove_member':
       handleRemoveMember($userId);
+      break;
+
+    case 'remove_members': // NEW: Handle multiple member removal
+      handleRemoveMembers($userId);
       break;
 
     case 'mark_done':
@@ -261,6 +269,77 @@ function handleAddMember($userId)
 }
 
 /**
+ * Handles adding multiple members to a project at once
+ * @param int $userId - The ID of the user attempting to add members (for permission checking).
+ */
+function handleAddMembers($userId)
+{
+  $projectId = $_POST['project_id'] ?? 0;
+  $memberIds = $_POST['member_ids'] ?? [];
+
+  // Validation - project ID
+  if (empty($projectId)) {
+    handleResponse(false, 'Invalid project ID.', null, 400);
+    return;
+  }
+
+  // Validation - member IDs must be an array with at least one member
+  if (!is_array($memberIds) || empty($memberIds)) {
+    handleResponse(false, 'Please select at least one member to add.', null, 400);
+    return;
+  }
+
+  // Permission check
+  $project = Project::getById($projectId);
+  if (!$project || !$project->canManageTeam($userId)) {
+    handleResponse(false, 'Access denied.', null, 403);
+    return;
+  }
+
+  // Add members one by one, tracking success/failures
+  $successCount = 0;
+  $failedMembers = [];
+
+  foreach ($memberIds as $memberId) {
+    // Sanitize and validate each member ID
+    $memberId = filter_var($memberId, FILTER_VALIDATE_INT);
+
+    if (!$memberId) {
+      continue; // Skip invalid IDs
+    }
+
+    // Attempt to add member
+    if (Project::addMember($projectId, $memberId)) {
+      $successCount++;
+    } else {
+      // Get user name for error reporting (optional)
+      try {
+        $user = User::getById($memberId);
+        $failedMembers[] = $user ? $user->getName() : "User #$memberId";
+      } catch (Exception $e) {
+        $failedMembers[] = "User #$memberId";
+      }
+    }
+  }
+
+  // Generate response message
+  if ($successCount > 0 && empty($failedMembers)) {
+    // All members added successfully
+    $message = $successCount === 1
+      ? '1 member added successfully.'
+      : "$successCount members added successfully.";
+    handleResponse(true, $message);
+  } elseif ($successCount > 0 && !empty($failedMembers)) {
+    // Some succeeded, some failed
+    $message = "$successCount member(s) added. Failed to add: " . implode(', ', $failedMembers);
+    handleResponse(true, $message);
+  } else {
+    // All failed
+    handleResponse(false, 'Failed to add members. They may already be on the team.', null, 500);
+  }
+}
+
+/**
  * Handles removing a member from a project. Requires current user ($userId) to have management permissions.
  * @param int $userId - The ID of the user attempting to remove a member (for permission checking).
  */
@@ -290,6 +369,96 @@ function handleRemoveMember($userId)
     handleResponse(true, 'Member removed successfully.');
   } else {
     handleResponse(false, 'Failed to remove member.', null, 500);
+  }
+}
+
+/**
+ * Handles removing multiple members from a project at once
+ * @param int $userId - The ID of the user attempting to remove members (for permission checking).
+ */
+function handleRemoveMembers($userId)
+{
+  $projectId = $_POST['project_id'] ?? 0;
+  $memberIds = $_POST['member_ids'] ?? [];
+
+  // Validation - project ID
+  if (empty($projectId)) {
+    handleResponse(false, 'Invalid project ID.', null, 400);
+    return;
+  }
+
+  // Validation - member IDs must be an array with at least one member
+  if (!is_array($memberIds) || empty($memberIds)) {
+    handleResponse(false, 'Please select at least one member to remove.', null, 400);
+    return;
+  }
+
+  // Permission check
+  $project = Project::getById($projectId);
+  if (!$project || !$project->canManageTeam($userId)) {
+    handleResponse(false, 'Access denied.', null, 403);
+    return;
+  }
+
+  // Prevent removing the team lead
+  $teamLeadId = $project->getTeamLeadId();
+
+  // Remove members one by one, tracking success/failures
+  $successCount = 0;
+  $failedMembers = [];
+  $skippedTeamLead = false;
+
+  foreach ($memberIds as $memberId) {
+    // Sanitize and validate each member ID
+    $memberId = filter_var($memberId, FILTER_VALIDATE_INT);
+
+    if (!$memberId) {
+      continue; // Skip invalid IDs
+    }
+
+    // Skip team lead
+    if ($memberId == $teamLeadId) {
+      $skippedTeamLead = true;
+      continue;
+    }
+
+    // Attempt to remove member
+    if (Project::removeMember($projectId, $memberId)) {
+      $successCount++;
+    } else {
+      // Get user name for error reporting
+      try {
+        $user = User::getById($memberId);
+        $failedMembers[] = $user ? $user->getName() : "User #$memberId";
+      } catch (Exception $e) {
+        $failedMembers[] = "User #$memberId";
+      }
+    }
+  }
+
+  // Generate response message
+  if ($successCount > 0 && empty($failedMembers)) {
+    // All members removed successfully
+    $message = $successCount === 1
+      ? '1 member removed successfully.'
+      : "$successCount members removed successfully.";
+
+    if ($skippedTeamLead) {
+      $message .= ' (Team Lead cannot be removed)';
+    }
+
+    handleResponse(true, $message);
+  } elseif ($successCount > 0 && !empty($failedMembers)) {
+    // Some succeeded, some failed
+    $message = "$successCount member(s) removed. Failed to remove: " . implode(', ', $failedMembers);
+    handleResponse(true, $message);
+  } else {
+    // All failed
+    $message = 'Failed to remove members.';
+    if ($skippedTeamLead) {
+      $message .= ' Team Lead cannot be removed.';
+    }
+    handleResponse(false, $message, null, 500);
   }
 }
 

@@ -425,6 +425,13 @@ You can use the default credentials listed to explore role-based access, project
 
 </details>
 
+## Change-Log (improvements)
+
+- Fixed system comments - status change (can't edit and delete system comments)
+- Fixed form submission for adding/removing multiple team members
+- Enhanced confirmation modal with dynamic member names display
+- Improved distinction for logged-in users when assigning/reassigning a task by adding " 👤 YOU " in front of the name of the user
+
 ### Contributing
 
 - This is a student project. For feedback or improvements, contact the author.

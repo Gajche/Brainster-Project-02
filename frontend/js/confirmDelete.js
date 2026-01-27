@@ -81,7 +81,7 @@ $(document).ready(function () {
       .removeClass()
       .addClass("modal-header bg-danger text-white");
     $("#confirmModalLabel").html(
-      '<i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion'
+      '<i class="fas fa-exclamation-triangle me-2"></i>Confirm Deletion',
     );
     $("#confirmModalBtn")
       .removeClass()

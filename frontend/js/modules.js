@@ -3,3 +3,5 @@ export { initAuth } from "./auth.js";
 export { initKanban } from "./kanban.js";
 export { initTaskModals } from "./taskModal.js";
 export { initComments } from "./comment.js";
+
+export { initProjectMembers } from "./projectMembers.js";

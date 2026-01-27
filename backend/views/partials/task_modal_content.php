@@ -81,7 +81,10 @@ $canUnassign = ($canAssign && $currentAssignee && $currentUser->getLevel() !== '
         <select class="form-select" id="assignee_id-<?= $task->getId() ?>" name="assignee_id" required onchange="this.form.submit()">
           <option value="">Select Assignee</option>
           <?php foreach ($currentUser->getAssignableUsers($task->getProjectId()) as $assigneeOption): ?>
-            <option value="<?= $assigneeOption['id'] ?>" <?= $task->getAssignedTo() == $assigneeOption['id'] ? 'selected' : '' ?>><?= htmlspecialchars($assigneeOption['name']) ?></option>
+            <option value="<?= $assigneeOption['id'] ?>" <?= $task->getAssignedTo() == $assigneeOption['id'] ? 'selected' : '' ?>>
+              <?php if ($assigneeOption['id'] == $userId): ?>👤 YOU - <?php endif; ?>
+            <?= htmlspecialchars($assigneeOption['name']) ?> (<?= htmlspecialchars($assigneeOption['level']) ?>)
+            </option>
           <?php endforeach; ?>
         </select>
       </form>
@@ -146,13 +149,29 @@ $canUnassign = ($canAssign && $currentAssignee && $currentUser->getLevel() !== '
   <?php else: ?>
     <div class="list-group">
       <?php foreach ($comments as $comment): ?>
-        <div class="list-group-item list-group-item-action flex-column align-items-start">
+        <?php
+        // Check if it's a system comment using the pattern
+        $isSystemComment = Comment::isSystemContent($comment['content']);
+        $canEditComment = !$isSystemComment && ($comment['user_id'] == $userId || isAdmin());
+        ?>
+        <div class="list-group-item list-group-item-action flex-column align-items-start <?= $isSystemComment ? 'bg-light border-primary border-opacity-25' : '' ?>">
           <div class="d-flex w-100 justify-content-between">
-            <h6 class="mb-1"><strong><?= htmlspecialchars($comment['user_name']) ?></strong></h6>
-            <small><?= htmlspecialchars($comment['created_at']) ?> <?php if ($comment['edited']): ?>(Edited)<?php endif; ?></small>
+            <h6 class="mb-1">
+              <?php if ($isSystemComment): ?>
+                <i class="fas fa-robot text-primary me-1" title="System-generated status change"></i>
+              <?php endif; ?>
+              <strong><?= htmlspecialchars($comment['user_name']) ?></strong>
+            </h6>
+            <small>
+              <?= htmlspecialchars($comment['created_at']) ?>
+              <?php if ($comment['edited'] && !$isSystemComment): ?>(Edited)<?php endif; ?>
+            </small>
           </div>
-          <p class="mb-1"><em><?= htmlspecialchars($comment['content']) ?></em></p>
-          <?php if ($comment['user_id'] == $userId || isAdmin()): ?>
+          <p class="mb-1 <?= $isSystemComment ? 'fst-italic text-muted' : '' ?>">
+            <em><?= htmlspecialchars($comment['content']) ?></em>
+          </p>
+
+          <?php if ($canEditComment): ?>
             <div class="d-flex justify-content-end mt-2">
               <button class="btn btn-sm btn-outline-warning me-2 edit-comment-btn" data-comment-id="<?= $comment['id'] ?>">
                 <i class="fas fa-edit me-1"></i> Edit
